@@ -1284,6 +1284,38 @@ function setupActionEscrow() {
 }
 
 function setupLandingInteractions() {
+  const journey = $('#journey');
+  const journeyCards = $$('.scroll-story-cards article');
+  const updateJourneyStory = () => {
+    if (!journey || !journeyCards.length) return;
+    const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches || window.innerWidth <= 760;
+    if (reduced) {
+      journeyCards.forEach(card => { card.style.opacity = ''; card.style.transform = ''; card.classList.remove('story-active', 'story-settled'); });
+      return;
+    }
+    const track = $('.scroll-story-cards');
+    const cardWidth = journeyCards[0].offsetWidth;
+    const available = track.clientWidth - cardWidth;
+    const centerX = available / 2;
+    const start = journey.offsetTop;
+    const range = Math.max(1, journey.offsetHeight - window.innerHeight);
+    const progress = Math.max(0, Math.min(0.999, (window.scrollY - start) / range));
+    journeyCards.forEach((card, index) => {
+      const phase = Math.max(0, Math.min(1, progress * journeyCards.length - index));
+      const arrival = Math.min(1, phase / .28);
+      const settling = Math.max(0, Math.min(1, (phase - .28) / .72));
+      const eased = 1 - Math.pow(1 - settling, 3);
+      const finalX = available * (index / (journeyCards.length - 1));
+      const x = centerX + (finalX - centerX) * eased;
+      const scale = .82 + arrival * .3 - settling * .12;
+      const y = 12 + eased * 82;
+      card.style.opacity = String(arrival);
+      card.style.transform = `translate3d(${x}px, ${y}px, 0) scale(${scale})`;
+      card.style.zIndex = String(10 + (phase > 0 && phase < 1 ? 2 : 0) - index);
+      card.classList.toggle('story-active', phase > 0 && phase < 1);
+      card.classList.toggle('story-settled', phase >= 1);
+    });
+  };
   const setScanMode = mode => {
     scanMode = mode;
     const reference = mode === 'reference';
@@ -1349,7 +1381,7 @@ function setupLandingInteractions() {
     navToggle.textContent = '☰';
   });
 
-  const revealTargets = $$('.intro,.center,.cards,.stats,.flight-recorder,.extension-showcase,.final');
+  const revealTargets = $$('.intro,.center,.cards:not(.scroll-story-cards),.stats,.flight-recorder,.extension-showcase,.final');
   if ('IntersectionObserver' in window && !window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
     revealTargets.forEach(target => target.classList.add('reveal-ready'));
     const revealObserver = new IntersectionObserver(entries => entries.forEach(entry => {
@@ -1366,9 +1398,11 @@ function setupLandingInteractions() {
     let current = sections[0]?.id;
     sections.forEach(section => { if (section.getBoundingClientRect().top <= 120) current = section.id; });
     navLinks.forEach(link => link.classList.toggle('active', link.getAttribute('href') === `#${current}`));
+    updateJourneyStory();
   };
   updateScroll();
   window.addEventListener('scroll', updateScroll, { passive: true });
+  window.addEventListener('resize', updateJourneyStory, { passive: true });
 }
 
 document.addEventListener('keydown', event => {
