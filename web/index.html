@@ -4,11 +4,11 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; connect-src 'self' https://api.github.com https://raw.githubusercontent.com https://api.osv.dev; object-src 'none'; base-uri 'none'; form-action 'none'">
-<meta name="description" content="Heimdall maps AI agents, tools, permissions, and secrets into explainable attack paths and verifiable fix plans.">
+<meta name="description" content="Heimdall explains what your AI app can do, what could go wrong, and what to change first.">
 <meta name="theme-color" content="#ffffff">
 <meta property="og:type" content="website">
 <meta property="og:title" content="Heimdall — Scan, prove, fix, verify">
-<meta property="og:description" content="Inspect real source evidence, review proposed changes, and rescan another commit to verify static findings.">
+<meta property="og:description" content="Get a plain-English security check for your AI app, with practical fixes linked to the code.">
 <title>Heimdall — Scan, prove, fix, verify</title>
 <link rel="icon" href="heimdall-logo.svg" type="image/svg+xml">
 <link rel="stylesheet" href="styles.css">
@@ -55,9 +55,9 @@
 <input id="repo" type="url" inputmode="url" autocomplete="url" spellcheck="false" placeholder="https://github.com/username/repo" aria-describedby="repoHelp repoError">
 <button class="green" type="submit">Start scan <span aria-hidden="true">→</span></button>
 </form>
-<div class="scan-reference"><label for="repoRef">Branch, tag, or commit <span>(optional)</span></label><input id="repoRef" autocomplete="off" spellcheck="false" placeholder="Default branch"></div>
+<div class="scan-reference"><label for="repoRef">Which version should we check? <span>(optional)</span></label><input id="repoRef" autocomplete="off" spellcheck="false" placeholder="Leave blank for the main version"></div>
 <p class="form-error" id="repoError" role="alert"></p>
-<p class="hint" id="repoHelp"><span>Public repositories only</span><span aria-hidden="true">·</span><span>No credentials required</span><span aria-hidden="true">·</span> Try <button class="demo" type="button">vulnerable agent source</button>
+<p class="hint" id="repoHelp"><span>Public GitHub repositories only</span><span aria-hidden="true">·</span><span>No password needed</span><span aria-hidden="true">·</span> Try <button class="demo" type="button">a sample app with an issue</button>
 </p>
 <div class="proof" aria-label="What Heimdall produces">
 <article>
@@ -83,21 +83,21 @@
 </article>
 </div>
 <div class="glass" id="demo" aria-label="Repository evidence preview">
-<div class="preview-label">REPOSITORY EVIDENCE · WAITING FOR YOUR SCAN</div>
+<div class="preview-label">YOUR SECURITY CHECK · WAITING FOR A REPOSITORY</div>
 <div class="stage evidence-preview">
 <div class="stack">
-<article><header>OBSERVED <b>source facts</b></header><p>Exact file, line, rule, and commit for each relationship.</p></article>
-<article><header>DERIVED <b>computed paths</b></header><p>Static reachability through observed relationships.</p></article>
-<article><header>UNVERIFIED <b>exploitability</b></header><p>Attacker control, runtime behavior, and credential validity remain untested.</p></article>
+<article><header>FOUND <b>what is in your code</b></header><p>We point to the exact place we found it.</p></article>
+<article><header>CONNECTED <b>how things could link together</b></header><p>We show when an outside request can reach a powerful action.</p></article>
+<article><header>NEEDS REVIEW <b>what a scan cannot know</b></header><p>We do not pretend to test a live attack or prove your app is safe.</p></article>
 </div>
-<div class="map"><div class="orbit"><img src="heimdall-logo.svg" alt=""></div><div class="replay"><small>SCAN → PROVE → FIX → VERIFY</small><code>Every conclusion links to repository evidence.</code></div></div>
-<article class="root"><header><span><small>NO REPOSITORY ANALYZED YET</small><h3>The source provides the proof.</h3></span></header><p>Paste a repository above to compute its capability graph.</p><p>No attack is executed. No successful mitigation is assumed.</p><button class="secondary" type="button" id="previewScan">Inspect a repository</button></article>
+<div class="map"><div class="orbit"><img src="heimdall-logo.svg" alt=""></div><div class="replay"><small>UNDERSTAND → ACT → CHECK</small><code>Every answer links to the code it came from.</code></div></div>
+<article class="root"><header><span><small>NO REPOSITORY CHECKED YET</small><h3>Start with your app’s real code.</h3></span></header><p>Paste a repository above to see what your AI app can do and what deserves attention.</p><p>Heimdall reads the code but does not run an attack.</p><button class="secondary" type="button" id="previewScan">Check a repository</button></article>
 </div>
 </div>
 </section>
 <section class="wrap block twin-showcase" id="twin-showcase">
-<header class="intro"><span><small>REAL BEFORE AND AFTER</small><h2>Did the static path change?</h2></span><p>Scan a changed branch or commit with the same engine. Heimdall recomputes the evidence and tracks the original finding and graph path. Partial analysis stays inconclusive.</p></header>
-<div class="flight-recorder"><header class="flight-toolbar"><strong>Commit verification</strong><span class="sample-badge">REQUIRES TWO REAL SCANS</span></header><div class="verification-placeholder"><h3>Scan → inspect → change source → rescan</h3><p>“Original static finding no longer detected” requires a new repository state with sufficient analysis coverage. It does not claim the application is completely secure.</p><button class="secondary" id="viewVerification" type="button">Open scan verification</button></div></div>
+<header class="intro"><span><small>CHECK YOUR CHANGE</small><h2>Did the fix help?</h2></span><p>Check the old version and the updated version. Heimdall explains which issues no longer appear and which still need attention.</p></header>
+<div class="flight-recorder"><header class="flight-toolbar"><strong>Before and after</strong><span class="sample-badge">USES TWO REAL CHECKS</span></header><div class="verification-placeholder"><h3>Check → change the code → check again</h3><p>Heimdall compares the two versions it can read. It does not claim the entire application is completely secure.</p><button class="secondary" id="viewVerification" type="button">Check a change</button></div></div>
 </section>
 <section class="wrap block" id="journey">
 <header class="intro">
@@ -110,63 +110,63 @@
 <div class="cards three">
 <article>
 <i>⌕</i>
-<small>1. SCAN THE REPO</small>
+<small>1. CHECK YOUR APP</small>
 <h3>Point Heimdall at GitHub</h3>
-<p>Paste a repository URL. Heimdall pulls real source, detects AI agents and MCP servers, then builds a security map without asking for credentials.</p>
-<code>repo → agents → tools</code>
+<p>Paste a repository URL. Heimdall reads the real code and looks for AI features, powerful actions, and exposed secrets.</p>
+<code>your app → what it can do</code>
 </article>
 <article>
 <i>△</i>
-<small>2. SEE WHAT CAN GO WRONG</small>
-<h3>Turn code into attack paths</h3>
-<p>The dashboard shows source findings and traverses only relationships supported by evidence. A reachable capability chain is a static finding; successful exploitation remains unverified.</p>
-<code>prompt → tool → secret</code>
+<small>2. UNDERSTAND THE RISK</small>
+<h3>See what could go wrong</h3>
+<p>The dashboard explains the practical consequence first, then shows the code behind it. It separates what was found from what still needs a human check.</p>
+<code>request → action → consequence</code>
 </article>
 <article>
 <i>⌁</i>
-<small>3. FIX WHAT MATTERS</small>
-<h3>Ship least-privilege fixes</h3>
-<p>Review evidence-specific guidance and exact proposed diffs for supported tool registrations. Apply changes yourself, then scan the new commit to compare fingerprints.</p>
-<code>finding → patch → trust</code>
+<small>3. MAKE AND CHECK THE CHANGE</small>
+<h3>Fix what matters first</h3>
+<p>Get a practical next step, make the change in your code, then check the updated version to see whether the issue still appears.</p>
+<code>issue → change → check</code>
 </article>
 </div>
 </section>
 <section class="wrap block" id="fixes">
 <header class="center">
-<small>WHAT HEIMDALL CHECKS</small>
-<h2>Security for the new AI attack surface.</h2>
-<p>Heimdall combines source rules, secret detection, dependency intelligence, and AI-specific controls to find the risks that appear when prompts, models, tools, data, and infrastructure start acting together.</p>
+<small>WHAT HEIMDALL LOOKS FOR</small>
+<h2>Understand the parts that matter.</h2>
+<p>Heimdall looks at the places where an AI feature can receive outside input, use private information, or take powerful actions.</p>
 </header>
 <div class="cards fixes">
 <article>
 <i>◌</i>
-<h3>Input boundaries</h3>
-<p>Trace supported direct request inputs into agent calls. Manipulation of the agent remains unverified.</p>
+<h3>Outside requests</h3>
+<p>See when a message from a user or another service reaches your AI feature.</p>
 </article>
 <article>
 <i>⌁</i>
-<h3>Secret candidates</h3>
-<p>Detect credential-shaped values and environment references. All evidence is redacted; validity is untested.</p>
+<h3>Private keys and passwords</h3>
+<p>Find places that may contain credentials, while hiding the actual values.</p>
 </article>
 <article>
 <i>⌘</i>
-<h3>Tool Permissions</h3>
-<p>Inspect explicit agent tool registrations and privileged operations in resolved tool definitions.</p>
+<h3>Powerful actions</h3>
+<p>See whether the AI can trigger payments, databases, files, messages, or other sensitive actions.</p>
 </article>
 <article>
 <i>▦</i>
-<h3>MCP Exposure</h3>
-<p>Parse JSON MCP server configuration and show only the tools, commands, and credential references it explicitly declares.</p>
+<h3>Connected services</h3>
+<p>See which outside services and commands your AI feature is connected to.</p>
 </article>
 <article>
 <i>$</i>
-<h3>Dependencies</h3>
-<p>Check established package versions against OSV. Unresolved ranges remain clearly marked.</p>
+<h3>Third-party packages</h3>
+<p>Check the exact packages your app uses for publicly known security problems.</p>
 </article>
 <article>
 <i>◎</i>
-<h3>Static reachability</h3>
-<p>Follow proven registrations to sensitive operations. Every graph edge links to source at the scanned commit.</p>
+<h3>How pieces connect</h3>
+<p>Show when an outside request can lead to a sensitive action, with a link to the code.</p>
 </article>
 </div>
 </section>
@@ -194,9 +194,9 @@
 <button id="close" type="button" aria-label="Cancel scan">×</button>
 <img src="heimdall-logo.svg" alt="">
 <small>HEIMDALL SECURITY COPILOT</small>
-<h2 id="mt">Mapping your repository</h2>
-<p id="mp" role="status" aria-live="polite">Waiting to resolve a repository commit…</p>
-<ol id="scanStages" class="scan-stages"><li data-stage="metadata">Resolve commit</li><li data-stage="source">Read source</li><li data-stage="dependencies">Check packages</li><li data-stage="analysis">Analyze evidence</li></ol>
+<h2 id="mt">Checking your app</h2>
+<p id="mp" role="status" aria-live="polite">Getting the version you asked us to check…</p>
+<ol id="scanStages" class="scan-stages"><li data-stage="metadata">Get the right version</li><li data-stage="source">Read your code</li><li data-stage="dependencies">Check packages</li><li data-stage="analysis">Explain what we found</li></ol>
 </div>
 </div>
 <script type="module" src="app.js">
