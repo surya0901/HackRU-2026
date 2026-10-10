@@ -227,6 +227,7 @@ button{min-height:40px}
 
 /* Source evidence fits the existing console and visual identity. */
 .priority-callout{padding:24px}.priority-callout button{position:static;transform:none;margin-top:16px}.priority-callout p+p{margin-top:8px}
+.plain-language-banner{display:grid;gap:5px;padding:16px 18px;margin:4px 0 18px;border:1px solid #b8d5f2;border-radius:14px;background:#f4f9ff;color:#334155;font-size:13px;line-height:1.45}.plain-language-banner strong{color:#0058b0;font-size:14px}.plain-lead{font-size:16px;line-height:1.5}
 [hidden]{display:none!important}
 .scan-reference{max-width:670px;margin:12px auto 0;display:flex;gap:12px;align-items:center;text-align:left;font-size:12px;color:#626267}.scan-reference span{color:#6e6e73}.scan-reference input{flex:1;min-width:0;border:1px solid #d2d2d7;background:#fff;border-radius:10px;padding:8px 12px;color:#1d1d1f}
 .evidence-preview .stack p{font-size:12px;color:#626267;text-align:left}.evidence-preview .stack header b{color:#626267}.verification-placeholder{padding:36px;max-width:860px}.verification-placeholder p{color:#626267}.evidence-preview .root button{margin-top:12px}
