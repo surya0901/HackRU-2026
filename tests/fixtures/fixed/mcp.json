@@ -1,0 +1,10 @@
+{
+  "mcpServers": {
+    "customer-admin": {
+      "command": "node",
+      "args": ["./customer-server.js"],
+      "permissions": ["customer.read"],
+      "env": { "SERVICE_TOKEN": "${SERVICE_TOKEN}" }
+    }
+  }
+}

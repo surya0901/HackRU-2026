@@ -1,0 +1,14 @@
+{
+  "name": "heimdall-security-engine",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "node scripts/build.mjs",
+    "test": "node --test tests/*.test.js",
+    "check": "npm test && npm run build && node --check web/app.js"
+  },
+  "dependencies": { "@babel/parser": "^7.28.5" },
+  "devDependencies": { "esbuild": "^0.25.11" },
+  "engines": { "node": ">=20" }
+}
