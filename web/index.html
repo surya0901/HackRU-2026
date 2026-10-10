@@ -36,27 +36,34 @@
 </div>
 <div class="actions">
 <button id="launchConsole" class="signin" type="button">Open console</button>
-<button class="green demo" type="button">Try an example</button>
+<button class="green project-demo" type="button">Try an example</button>
 <button id="navToggle" class="nav-toggle" type="button" aria-label="Open navigation" aria-expanded="false">☰</button>
 </div>
 </nav>
 <main id="main">
 <section class="hero wrap" id="top">
-<p class="hero-label">Before you integrate</p>
-<h1>Know if a tool is safe<br>
-<em>for your project.</em>
+<p class="hero-label" id="heroLabel">Protect what you are building</p>
+<h1 id="heroTitle">Find security gaps<br>
+<em>before you ship.</em>
 </h1>
-<p class="lede">Compare your project with a public tool before adding it. Heimdall checks both repositories, explains possible gaps in everyday language, and gives Gemini evidence it can use to help you integrate safely.</p>
-<form id="scan" novalidate>
-<div class="compare-inputs">
-<label><span>Your project</span><input id="repo" type="url" inputmode="url" autocomplete="url" spellcheck="false" placeholder="https://github.com/you/your-project" aria-describedby="repoHelp repoError"></label>
-<label><span>Tool you want to use</span><input id="toolRepo" type="url" inputmode="url" autocomplete="url" spellcheck="false" placeholder="https://github.com/owner/tool"></label>
-<label class="use-case"><span>What will you use it for? <em>Optional</em></span><input id="useCase" type="text" maxlength="180" placeholder="Example: add user login to my app"></label>
+<p class="lede" id="heroLede">Paste the public GitHub repository you are building. Heimdall checks its files and packages, explains every problem in normal words, and shows what to fix first.</p>
+<div class="scan-mode-tabs" role="tablist" aria-label="Choose what to check">
+<button class="active" id="projectMode" type="button" role="tab" aria-selected="true" aria-controls="projectPanel">Scan my project</button>
+<button id="referenceMode" type="button" role="tab" aria-selected="false" aria-controls="referencePanel">Check a reference</button>
 </div>
-<button class="green" type="submit">Check before I use it <span aria-hidden="true">→</span></button>
+<form id="scan" novalidate>
+<div class="scan-panel" id="projectPanel" role="tabpanel" aria-labelledby="projectMode">
+<label><span>Your public GitHub repository</span><input id="repo" type="url" inputmode="url" autocomplete="url" spellcheck="false" placeholder="https://github.com/you/your-project" aria-describedby="repoHelp repoError"></label>
+</div>
+<div class="scan-panel compare-inputs" id="referencePanel" role="tabpanel" aria-labelledby="referenceMode" hidden>
+<label><span>Your project</span><input id="compareProject" type="url" inputmode="url" autocomplete="url" spellcheck="false" placeholder="https://github.com/you/your-project"></label>
+<label><span>Reference repository</span><input id="toolRepo" type="url" inputmode="url" autocomplete="url" spellcheck="false" placeholder="https://github.com/owner/reference"></label>
+<label class="use-case"><span>How do you want to use it?</span><input id="useCase" type="text" maxlength="180" placeholder="Example: use its login system in my app"></label>
+</div>
+<button class="green" id="scanSubmit" type="submit">Scan my project <span aria-hidden="true">→</span></button>
 </form>
 <p class="form-error" id="repoError" role="alert"></p>
-<p class="hint" id="repoHelp"><span>Public repositories only</span><span aria-hidden="true">·</span><span>No credentials required</span><span aria-hidden="true">·</span> Try <button class="demo" type="button">an example comparison</button>
+<p class="hint" id="repoHelp"><span>Public repositories only</span><span aria-hidden="true">·</span><span>No credentials required</span><span aria-hidden="true">·</span> Try <button class="project-demo" type="button">an example scan</button>
 </p>
 <div class="proof" aria-label="What Heimdall produces">
 <article>
@@ -315,21 +322,21 @@
 <div class="cards four simple-features">
 <article>
 <i>⌕</i>
-<small>1. ADD BOTH LINKS</small>
-<h3>Show Heimdall your project and the tool</h3>
-<p>Paste two public GitHub links and explain what you want the new tool to do.</p>
+<small>1. ADD YOUR LINK</small>
+<h3>Show Heimdall your project</h3>
+<p>Paste one public GitHub repository. Heimdall reads selected public files without running the code.</p>
 </article>
 <article>
 <i>!</i>
-<small>2. COMPARE</small>
-<h3>See the gaps before integration</h3>
-<p>Heimdall checks both repositories and groups technical evidence into a short, understandable review.</p>
+<small>2. UNDERSTAND</small>
+<h3>See problems in normal words</h3>
+<p>Heimdall groups the evidence into a short list and puts the most important problem first.</p>
 </article>
 <article>
 <i>⌁</i>
-<small>3. CONTINUE IN GEMINI</small>
-<h3>Build a project-specific plan</h3>
-<p>Gemini receives a redacted Heimdall report and turns the verified evidence into ordered integration steps.</p>
+<small>3. FIX</small>
+<h3>Know exactly what to do next</h3>
+<p>Every problem includes a suggested fix, its location, and the evidence behind the warning.</p>
 </article>
 <article>
 <i>✓</i>
@@ -388,7 +395,7 @@
 <li><span>02</span> Gemini explains how it affects your intended use</li>
 <li><span>03</span> Heimdall checks the finished integration again</li>
 </ul>
-<button class="secondary demo" id="previewExtension" type="button">Try the comparison</button>
+<button class="secondary reference-demo" id="previewExtension" type="button">Check a reference</button>
 </div>
 <div class="browser-frame" aria-label="Illustrative Gemini handoff preview">
 <header><span aria-hidden="true"><i></i><i></i><i></i></span><b>Gemini conversation</b><em>Illustrative</em></header>
@@ -400,16 +407,16 @@
 <h3>Use this tool after two changes</h3>
 <p>Update the affected package and limit which project secrets the tool can access.</p>
 <div class="mini-path"><span>Evidence</span><i>→</i><span>Gemini plan</span><i>→</i><span>Verify</span></div>
-<button class="green demo" type="button">Run a real comparison</button>
+<button class="green reference-demo" type="button">Run a real comparison</button>
 </aside>
 </div>
 </div>
 </section>
 <section class="wrap final" id="dashboard">
 <img src="heimdall-logo.svg" alt="">
-<h2>Check a tool before it enters your project.</h2>
-<p>Compare two public repositories, understand the gaps, and take an evidence-backed integration plan into Gemini.</p>
-<button class="green demo">Try an example comparison</button>
+<h2>Understand your project before you ship it.</h2>
+<p>Scan one public repository, see the problems in normal words, and start with the fix that matters most.</p>
+<button class="green project-demo">Try an example scan</button>
 </section>
 </main>
 <footer>

@@ -10,6 +10,7 @@ const bar = $('#bar');
 const modalTitle = $('#mt');
 const modalProgress = $('#mp');
 const repoInput = $('#repo');
+const compareProjectInput = $('#compareProject');
 const toolRepoInput = $('#toolRepo');
 const useCaseInput = $('#useCase');
 const repoError = $('#repoError');
@@ -19,6 +20,7 @@ let integrationResult = null;
 let lastFocused = null;
 let replayTimer = null;
 let drawerReturnFocus = null;
+let scanMode = 'project';
 
 function parseRepository(value) {
   const trimmed = String(value || '').trim().replace(/\.git\/?$/i, '');
@@ -568,7 +570,7 @@ async function requestGeminiPlan(review, consoleElement) {
     if (!response.ok) throw new Error(`Gemini endpoint returned ${response.status}`);
     const plan = await response.json();
     const steps = Array.isArray(plan.steps) ? plan.steps : [];
-    output.innerHTML = `<strong>${esc(plan.summary || 'Integration plan')}</strong><p>${esc(plan.why || '')}</p>${steps.length ? `<ol>${steps.map(step => `<li>${esc(step)}</li>`).join('')}</ol>` : ''}${plan.verify ? `<p><b>Verify:</b> ${esc(plan.verify)}</p>` : ''}`;
+    output.innerHTML = `${plan.fit ? `<small>FIT FOR YOUR IDEA</small><strong>${esc(plan.fit)}</strong>` : ''}<p>${esc(plan.summary || 'Integration plan')}</p><p>${esc(plan.why || '')}</p>${steps.length ? `<ol>${steps.map(step => `<li>${esc(step)}</li>`).join('')}</ol>` : ''}${plan.verify ? `<p><b>Verify:</b> ${esc(plan.verify)}</p>` : ''}`;
     status.textContent = 'Plan created from the current Heimdall report.';
   } catch (error) {
     status.textContent = 'Gemini could not be reached. The evidence report is still available to copy.';
@@ -607,7 +609,7 @@ async function startIntegrationReview(projectValue, toolValue, useCase = '') {
   const toolRepo = parseRepository(toolValue);
   if (!projectRepo || !toolRepo) {
     repoError.textContent = 'Enter complete public GitHub links for both your project and the tool you want to use.';
-    (!projectRepo ? repoInput : toolRepoInput).focus();
+    (!projectRepo ? compareProjectInput : toolRepoInput).focus();
     return;
   }
   repoError.textContent = '';
@@ -1282,17 +1284,47 @@ function setupActionEscrow() {
 }
 
 function setupLandingInteractions() {
-  $('#scan').onsubmit = event => { event.preventDefault(); startIntegrationReview(repoInput.value, toolRepoInput.value, useCaseInput.value); };
-  [repoInput, toolRepoInput].forEach(input => input.addEventListener('input', () => { input.removeAttribute('aria-invalid'); repoError.textContent = ''; }));
-  $$('.demo').forEach(button => button.onclick = () => {
-    repoInput.value = 'https://github.com/surya0901/HackRU-2026';
+  const setScanMode = mode => {
+    scanMode = mode;
+    const reference = mode === 'reference';
+    $('#projectPanel').hidden = reference;
+    $('#referencePanel').hidden = !reference;
+    $('#projectMode').classList.toggle('active', !reference);
+    $('#referenceMode').classList.toggle('active', reference);
+    $('#projectMode').setAttribute('aria-selected', String(!reference));
+    $('#referenceMode').setAttribute('aria-selected', String(reference));
+    $('#heroLabel').textContent = reference ? 'Before you reuse outside code' : 'Protect what you are building';
+    $('#heroTitle').innerHTML = reference ? 'Know if a reference fits<br><em>your project.</em>' : 'Find security gaps<br><em>before you ship.</em>';
+    $('#heroLede').textContent = reference
+      ? 'Add your project, the public repository you want to learn from, and how you plan to use it. Heimdall checks the evidence, and Gemini explains whether it is a sensible fit.'
+      : 'Paste the public GitHub repository you are building. Heimdall checks its files and packages, explains every problem in normal words, and shows what to fix first.';
+    $('#scanSubmit').innerHTML = `${reference ? 'Check this reference' : 'Scan my project'} <span aria-hidden="true">→</span>`;
+    repoError.textContent = '';
+  };
+  $('#projectMode').onclick = () => setScanMode('project');
+  $('#referenceMode').onclick = () => setScanMode('reference');
+  $('#scan').onsubmit = event => {
+    event.preventDefault();
+    if (scanMode === 'reference') startIntegrationReview(compareProjectInput.value, toolRepoInput.value, useCaseInput.value);
+    else startScan(repoInput.value);
+  };
+  [repoInput, compareProjectInput, toolRepoInput].forEach(input => input.addEventListener('input', () => { input.removeAttribute('aria-invalid'); repoError.textContent = ''; }));
+  $$('.project-demo').forEach(button => button.onclick = () => {
+    setScanMode('project');
+    repoInput.value = 'https://github.com/OWASP/NodeGoat';
+    startScan(repoInput.value);
+  });
+  $$('.reference-demo').forEach(button => button.onclick = () => {
+    setScanMode('reference');
+    compareProjectInput.value = 'https://github.com/surya0901/HackRU-2026';
     toolRepoInput.value = 'https://github.com/OWASP/NodeGoat';
     useCaseInput.value = 'Use the tool as a learning example inside my security project';
-    startIntegrationReview(repoInput.value, toolRepoInput.value, useCaseInput.value);
+    document.querySelector('#top').scrollIntoView({ behavior: 'smooth' });
+    compareProjectInput.focus({ preventScroll: true });
   });
   $('#close').onclick = () => closeModal(true);
-  $('#launchConsole').onclick = () => integrationResult ? openIntegrationConsole(integrationResult) : startIntegrationReview('https://github.com/surya0901/HackRU-2026', 'https://github.com/OWASP/NodeGoat', 'Use the tool as a learning example inside my security project');
-  $('#agentButton').onclick = () => integrationResult ? openIntegrationConsole(integrationResult) : startIntegrationReview('https://github.com/surya0901/HackRU-2026', 'https://github.com/OWASP/NodeGoat', 'Use the tool as a learning example inside my security project');
+  $('#launchConsole').onclick = () => result ? openConsole(result) : startScan('https://github.com/OWASP/NodeGoat');
+  $('#agentButton').onclick = () => result ? openConsole(result) : startScan('https://github.com/OWASP/NodeGoat');
   $('#playReplay').onclick = playFlightRecorder;
   $('#containPath').onclick = () => {
     flightContained = true;

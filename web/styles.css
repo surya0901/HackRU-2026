@@ -238,8 +238,8 @@ nav{background:rgba(255,255,255,.92);border-bottom-color:#e5e5e7;backdrop-filter
 .hero-label{margin:0;color:#6e6e73;font-size:14px;font-weight:650}
 h1{margin-top:18px}h1 em{background:none;color:inherit}
 .lede{color:#626267}
-#scan{max-width:840px;align-items:end;background:#fff;border-color:#d2d2d7;box-shadow:0 12px 32px rgba(0,0,0,.07);padding:12px}
-.compare-inputs{min-width:0;flex:1;display:grid;grid-template-columns:1fr 1fr;gap:10px;text-align:left}.compare-inputs label{min-width:0;display:flex;flex-direction:column;gap:5px}.compare-inputs label>span{padding-left:4px;color:#5f5f65;font-size:11px;font-weight:650}.compare-inputs label em{color:#86868b;font-style:normal;font-weight:400}.compare-inputs .use-case{grid-column:1/-1}.compare-inputs input{width:100%;min-width:0;padding:11px 12px!important;border:1px solid #dedee2!important;border-radius:10px;background:#fafafa!important;color:#1d1d1f!important;font-size:13px!important}.compare-inputs input:focus{border-color:#8e8e93!important;background:#fff!important}
+#scan{max-width:840px;align-items:end;background:#fff;border-color:#d2d2d7;box-shadow:0 12px 32px rgba(0,0,0,.07);padding:12px}.scan-mode-tabs{width:max-content;margin:27px auto -12px;padding:4px;display:flex;gap:3px;border:1px solid #d2d2d7;border-radius:999px;background:#eaeaed}.scan-mode-tabs button{padding:9px 15px;border:0;border-radius:999px;background:transparent;color:#626267;font-size:12px;font-weight:700}.scan-mode-tabs button.active{background:#fff;color:#1d1d1f;box-shadow:0 1px 4px rgba(0,0,0,.09)}
+.scan-panel{min-width:0;flex:1;text-align:left}.scan-panel label{min-width:0;display:flex;flex-direction:column;gap:5px}.scan-panel label>span{padding-left:4px;color:#5f5f65;font-size:11px;font-weight:650}.scan-panel input{width:100%;min-width:0;padding:11px 12px!important;border:1px solid #dedee2!important;border-radius:10px;background:#fafafa!important;color:#1d1d1f!important;font-size:13px!important}.scan-panel input:focus{border-color:#8e8e93!important;background:#fff!important}.compare-inputs{display:grid;grid-template-columns:1fr 1fr;gap:10px}.compare-inputs .use-case{grid-column:1/-1}
 #scan>button{flex:0 0 auto;margin-bottom:1px;white-space:nowrap}.hint,.intro>p,.center>p,.final p,.cards p{color:#6e6e73}.hint button{color:#1d1d1f}
 .proof{gap:10px}.proof article{min-height:76px;justify-content:center;background:#fff;border-color:#dedee2;text-align:center;border-radius:14px}.proof small{color:#6e6e73;font-size:11px;letter-spacing:0;text-transform:none}.proof b{margin-top:3px;color:#1d1d1f;font-weight:600}
 .cards article,.browser-frame,.flight-recorder{box-shadow:none}
@@ -247,7 +247,7 @@ h1{margin-top:18px}h1 em{background:none;color:inherit}
 .agent-launch{display:none}
 .console-shell>aside>p,.console-shell>aside>small,.console-shell>aside>label{display:none}.console-shell>aside hr{margin:10px 0}.console-shell>aside>a{margin-top:2px}
 @media(max-width:760px){.source-note{display:none}}
-@media(max-width:700px){#scan{align-items:stretch;flex-direction:column}.compare-inputs{grid-template-columns:1fr}.compare-inputs .use-case{grid-column:auto}#scan>button{width:100%}}
+@media(max-width:700px){.scan-mode-tabs{width:100%;max-width:360px}.scan-mode-tabs button{flex:1;padding-inline:8px}#scan{align-items:stretch;flex-direction:column}.compare-inputs{grid-template-columns:1fr}.compare-inputs .use-case{grid-column:auto}#scan>button{width:100%}}
 
 /* Two-repository integration review and evidence-only Gemini handoff. */
 .integration-main{height:calc(100vh - 64px);overflow:auto;padding:44px max(24px,calc((100vw - 1040px)/2)) 70px;background:#f5f5f7}.integration-main>section,.integration-limit{max-width:1040px;margin-left:auto;margin-right:auto}
