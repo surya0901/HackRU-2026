@@ -1,4 +1,4 @@
-// Sentinel background service worker — the extension's privileged core.
+// Heimdall background service worker — the extension's privileged core.
 //
 // Responsibilities:
 //   • The ONLY context that holds the connection token and calls the dashboard
@@ -22,7 +22,7 @@ import {
 } from '../shared/storage';
 import type {
   Account,
-  SentinelNotification,
+  HeimdallNotification,
   Severity,
 } from '../shared/types';
 import type {
@@ -34,7 +34,7 @@ import type {
   PageScan,
 } from '../shared/messages';
 
-const LAST_ANALYSIS_KEY = 'sentinel.lastAnalysis';
+const LAST_ANALYSIS_KEY = 'heimdall.lastAnalysis';
 
 // In-memory caches (reset when the worker is recycled — fine, they re-populate).
 const pageScans = new Map<number, PageScan>();
@@ -54,7 +54,7 @@ const SEV_ICON_TINT: Record<Severity, string> = {
 async function recordNotification(input: NotifyInput): Promise<string> {
   const settings = await getSettings();
   const id = crypto.randomUUID();
-  const notif: SentinelNotification = {
+  const notif: HeimdallNotification = {
     id,
     type: input.type,
     severity: input.severity,
@@ -69,7 +69,7 @@ async function recordNotification(input: NotifyInput): Promise<string> {
   await refreshBadge();
 
   if (settings.notifications) {
-    chrome.notifications.create(`sentinel:${id}`, {
+    chrome.notifications.create(`heimdall:${id}`, {
       type: 'basic',
       iconUrl: chrome.runtime.getURL('icons/icon-128.png'),
       title: `${SEV_ICON_TINT[input.severity]} ${input.title}`,
@@ -88,8 +88,8 @@ async function refreshBadge(): Promise<void> {
 }
 
 chrome.notifications.onButtonClicked.addListener(async (notifId, btnIdx) => {
-  if (!notifId.startsWith('sentinel:')) return;
-  const id = notifId.slice('sentinel:'.length);
+  if (!notifId.startsWith('heimdall:')) return;
+  const id = notifId.slice('heimdall:'.length);
   if (btnIdx === 0) {
     const list = await getNotifications();
     const n = list.find((x) => x.id === id);
@@ -99,7 +99,7 @@ chrome.notifications.onButtonClicked.addListener(async (notifId, btnIdx) => {
 });
 
 chrome.notifications.onClicked.addListener(async (notifId) => {
-  if (!notifId.startsWith('sentinel:')) return;
+  if (!notifId.startsWith('heimdall:')) return;
   await chrome.action.openPopup().catch(() => openDashboard('/dashboard'));
   chrome.notifications.clear(notifId);
 });
@@ -159,7 +159,7 @@ async function activeTab(): Promise<chrome.tabs.Tab | undefined> {
 async function analyzeActivePage(): Promise<PageScan> {
   const tab = await activeTab();
   if (!tab?.id || !tab.url || !/^https?:/.test(tab.url)) {
-    return { origin: tab?.url ?? '', agents: [], mcp: [], ts: Date.now() };
+    return { origin: tab?.url ?? '', agents: [], mcp: [], findings: [], limitations: ['This browser page cannot be scanned.'], verification: { baselineTs: null, added: [], fixed: [], changed: [], unchanged: [] }, ts: Date.now() };
   }
   const tabId = tab.id;
   const cached = pageScans.get(tabId);
@@ -174,10 +174,10 @@ async function analyzeActivePage(): Promise<PageScan> {
     await chrome.scripting.executeScript({ target: { tabId }, files: ['content-pagescan.js'] });
   } catch {
     // No host permission yet / restricted page — return whatever we have.
-    return cached ?? { origin: new URL(tab.url).origin, agents: [], mcp: [], ts: Date.now() };
+    return cached ?? { origin: new URL(tab.url).origin, agents: [], mcp: [], findings: [], limitations: ['The extension could not access this page. Grant site access and retry.'], verification: { baselineTs: null, added: [], fixed: [], changed: [], unchanged: [] }, ts: Date.now() };
   }
   const timeout = new Promise<PageScan>((resolve) =>
-    setTimeout(() => resolve(cached ?? { origin: new URL(tab.url!).origin, agents: [], mcp: [], ts: Date.now() }), 9000),
+    setTimeout(() => resolve(cached ?? { origin: new URL(tab.url!).origin, agents: [], mcp: [], findings: [], limitations: ['The passive page scan timed out before evidence was returned.'], verification: { baselineTs: null, added: [], fixed: [], changed: [], unchanged: [] }, ts: Date.now() }), 9000),
   );
   return Promise.race([waiter, timeout]);
 }
@@ -186,21 +186,21 @@ async function analyzeActivePage(): Promise<PageScan> {
 // Context menus (FEATURE 4)
 // ---------------------------------------------------------------------------
 const MENU = {
-  analyze: 'sentinel-analyze',
-  explain: 'sentinel-explain',
-  fix: 'sentinel-fix',
-  save: 'sentinel-save',
-  dashboard: 'sentinel-dashboard',
+  analyze: 'heimdall-analyze',
+  explain: 'heimdall-explain',
+  fix: 'heimdall-fix',
+  save: 'heimdall-save',
+  dashboard: 'heimdall-dashboard',
 } as const;
 
 function installContextMenus(): void {
   chrome.contextMenus.removeAll(() => {
-    chrome.contextMenus.create({ id: MENU.analyze, title: 'Analyze with Sentinel', contexts: ['selection'] });
+    chrome.contextMenus.create({ id: MENU.analyze, title: 'Analyze with Heimdall', contexts: ['selection'] });
     chrome.contextMenus.create({ id: MENU.explain, title: 'Explain vulnerability', contexts: ['selection'] });
     chrome.contextMenus.create({ id: MENU.fix, title: 'Generate secure fix', contexts: ['selection'] });
     chrome.contextMenus.create({ id: MENU.save, title: 'Save as finding', contexts: ['selection'] });
     chrome.contextMenus.create({ id: 'sep', type: 'separator', contexts: ['selection'] });
-    chrome.contextMenus.create({ id: MENU.dashboard, title: 'Open Sentinel dashboard', contexts: ['selection', 'page', 'action'] });
+    chrome.contextMenus.create({ id: MENU.dashboard, title: 'Open Heimdall dashboard', contexts: ['selection', 'page', 'action'] });
   });
 }
 
@@ -237,8 +237,8 @@ chrome.contextMenus.onClicked.addListener(async (info, tab) => {
     await recordNotification({
       type: 'critical-finding',
       severity: 'info',
-      title: 'Connect Sentinel to analyze',
-      body: 'Open the Sentinel popup and connect your account to run AI-powered analysis.',
+      title: 'Connect Heimdall to analyze',
+      body: 'Open the Heimdall popup and connect your account to run AI-powered analysis.',
     });
     return;
   }
@@ -254,7 +254,7 @@ chrome.contextMenus.onClicked.addListener(async (info, tab) => {
       await recordNotification({
         type: 'critical-finding',
         severity: result.severity,
-        title: `Sentinel: ${result.severity} issue in selection`,
+        title: `Heimdall: ${result.severity} issue in selection`,
         body: result.summary.slice(0, 160),
       });
     }
@@ -381,7 +381,7 @@ chrome.runtime.onMessage.addListener((msg: Msg, sender, sendResponse) => {
 
 // Keep the badge current when notifications change from any context.
 chrome.storage.onChanged.addListener((changes, area) => {
-  if (area === 'local' && changes['sentinel.notifications']) void refreshBadge();
+  if (area === 'local' && changes['heimdall.notifications']) void refreshBadge();
 });
 
 export type { ResultMap };

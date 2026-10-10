@@ -9,11 +9,13 @@ import type {
   SyncedScan,
   AgentScanResponse,
   Settings,
-  SentinelNotification,
+  HeimdallNotification,
   NotificationType,
   Severity,
   DetectedPageAgent,
   DetectedMcp,
+  WebsiteFinding,
+  WebsiteVerification,
 } from './types';
 
 /** Live agent/MCP detection result for a single page (FEATURE 5 + 6). */
@@ -21,6 +23,9 @@ export interface PageScan {
   origin: string;
   agents: DetectedPageAgent[];
   mcp: DetectedMcp[];
+  findings: WebsiteFinding[];
+  limitations: string[];
+  verification: WebsiteVerification;
   ts: number;
 }
 
@@ -44,7 +49,7 @@ export interface CopilotResult {
   poweredByAnthropic: boolean;
 }
 
-export type NotifyInput = Pick<SentinelNotification, 'type' | 'severity' | 'title' | 'body'> & {
+export type NotifyInput = Pick<HeimdallNotification, 'type' | 'severity' | 'title' | 'body'> & {
   url?: string;
 };
 
@@ -53,7 +58,7 @@ export interface BackgroundState {
   signedIn: boolean;
   settings: Settings;
   scans: SyncedScan[];
-  notifications: SentinelNotification[];
+  notifications: HeimdallNotification[];
   unread: number;
 }
 
@@ -93,7 +98,7 @@ export interface ResultMap {
   GET_SETTINGS: Settings;
   SET_SETTINGS: Settings;
   NOTIFY: { id: string };
-  GET_NOTIFICATIONS: SentinelNotification[];
+  GET_NOTIFICATIONS: HeimdallNotification[];
   MARK_READ: { ok: true };
   CLEAR_NOTIFICATIONS: { ok: true };
   OPEN_DASHBOARD: { ok: true };
@@ -110,7 +115,7 @@ export async function send<K extends Msg['type']>(
   msg: Extract<Msg, { type: K }>,
 ): Promise<ResultMap[K]> {
   const res = (await chrome.runtime.sendMessage(msg)) as Envelope<ResultMap[K]> | undefined;
-  if (!res) throw new Error('No response from Sentinel background worker');
+  if (!res) throw new Error('No response from Heimdall background worker');
   if (!res.ok) throw new Error(res.error);
   return res.data;
 }

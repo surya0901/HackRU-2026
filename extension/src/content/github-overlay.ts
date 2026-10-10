@@ -1,11 +1,11 @@
 // GitHub Security Overlay content script (FEATURE 3).
 //
-// On any github.com/<owner>/<repo> page it injects a Sentinel card showing the
+// On any github.com/<owner>/<repo> page it injects a Heimdall card showing the
 // repo's real trust posture: it asks the background worker for the signed-in
 // user's synced scans (GET /api/extension/scans) and matches the current repo.
 // If the repo has been scanned it renders trust score, grade, agent/MCP counts,
 // critical findings and latest-scan time; otherwise it offers a one-click
-// "Scan with Sentinel" that runs the real /api/agent-scan and re-renders.
+// "Scan with Heimdall" that runs the real /api/agent-scan and re-renders.
 
 import { createOverlay, escapeHtml, sevColor } from '../shared/ui';
 import { getSettings } from '../shared/storage';
@@ -44,7 +44,7 @@ function trustSeverity(trust: number): Severity {
   return 'critical';
 }
 
-const overlay = createOverlay('sentinel-github-overlay');
+const overlay = createOverlay('heimdall-github-overlay');
 overlay.host.style.cssText =
   'all: initial; position: fixed; z-index: 2147483600; bottom: 18px; right: 18px; width: 320px;';
 
@@ -58,7 +58,7 @@ function shell(inner: string): string {
         background:rgba(255,255,255,0.02);border-bottom:1px solid rgba(255,255,255,0.06);">
         <div style="width:22px;height:22px;border-radius:7px;background:linear-gradient(135deg,#22d3ee,#0ea5e9);
           display:flex;align-items:center;justify-content:center;font-size:13px;">🛡️</div>
-        <span style="font:800 13px ui-sans-serif;color:#fff;flex:1;">Sentinel</span>
+        <span style="font:800 13px ui-sans-serif;color:#fff;flex:1;">Heimdall</span>
         <span style="font:600 11px ui-sans-serif;color:#64748b;">${collapsed ? '▴' : '▾'}</span>
       </div>
       <div id="body" style="display:${collapsed ? 'none' : 'block'};padding:13px;">${inner}</div>
@@ -114,10 +114,10 @@ function renderUnscanned(repo: { owner: string; repo: string }, signedIn: boolea
   overlay.mount.innerHTML = shell(`
     <div style="font:700 13px ui-sans-serif;color:#e8eef6;margin-bottom:6px;">${escapeHtml(repo.owner)}/${escapeHtml(repo.repo)}</div>
     <p style="margin:0 0 12px;font:400 12px/1.5 ui-sans-serif;color:#94a3b8;">
-      ${signedIn ? 'This repository hasn’t been scanned yet. Run Sentinel’s agent-security analysis to get a trust score, agent/MCP inventory and findings.' : 'Connect your Sentinel account to scan this repository for AI-agent &amp; MCP risk.'}
+      ${signedIn ? 'This repository hasn’t been scanned yet. Run Heimdall’s agent-security analysis to get a trust score, agent/MCP inventory and findings.' : 'Connect your Heimdall account to scan this repository for AI-agent &amp; MCP risk.'}
     </p>
     <button id="act" style="width:100%;padding:11px;border:none;border-radius:11px;cursor:pointer;font:700 13px ui-sans-serif;background:linear-gradient(135deg,#22d3ee,#0ea5e9);color:#04121f;">
-      ${signedIn ? 'Scan with Sentinel' : 'Connect & scan'}
+      ${signedIn ? 'Scan with Heimdall' : 'Connect & scan'}
     </button>`);
   wireHeader(repo);
   overlay.mount.querySelector('#act')?.addEventListener('click', async () => {
@@ -132,16 +132,16 @@ function renderUnscanned(repo: { owner: string; repo: string }, signedIn: boolea
 function renderLoading(label: string): void {
   overlay.mount.innerHTML = shell(`
     <div style="display:flex;align-items:center;gap:10px;padding:6px 0;">
-      <div style="width:18px;height:18px;border:2px solid rgba(255,255,255,0.15);border-top-color:#22d3ee;border-radius:999px;animation:sentinel-spin 0.8s linear infinite;"></div>
+      <div style="width:18px;height:18px;border:2px solid rgba(255,255,255,0.15);border-top-color:#22d3ee;border-radius:999px;animation:heimdall-spin 0.8s linear infinite;"></div>
       <span style="font:600 12px ui-sans-serif;color:#94a3b8;">${escapeHtml(label)}</span>
     </div>
-    <style>@keyframes sentinel-spin{to{transform:rotate(360deg)}}</style>`);
+    <style>@keyframes heimdall-spin{to{transform:rotate(360deg)}}</style>`);
   wireHeader(currentRepo());
 }
 
 function renderError(repo: { owner: string; repo: string }, msg: string): void {
   overlay.mount.innerHTML = shell(`
-    <div style="font:700 12px ui-sans-serif;color:#fca5a5;margin-bottom:6px;">Couldn’t load Sentinel</div>
+    <div style="font:700 12px ui-sans-serif;color:#fca5a5;margin-bottom:6px;">Couldn’t load Heimdall</div>
     <p style="margin:0 0 10px;font:400 12px/1.5 ui-sans-serif;color:#94a3b8;">${escapeHtml(msg)}</p>
     <button id="retry" style="width:100%;padding:9px;border-radius:10px;cursor:pointer;font:700 12px ui-sans-serif;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.12);color:#e8eef6;">Retry</button>`);
   wireHeader(repo);
@@ -189,7 +189,7 @@ async function load(repo: { owner: string; repo: string }): Promise<void> {
     return;
   }
   overlay.host.style.display = 'block';
-  renderLoading('Checking Sentinel…');
+  renderLoading('Checking Heimdall…');
   try {
     const state = await send({ type: 'GET_STATE' });
     if (!state.signedIn) {

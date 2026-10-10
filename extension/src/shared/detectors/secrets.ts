@@ -2,7 +2,7 @@
 //
 // The provider patterns and the entropy-gated generic pass are ported verbatim
 // from the dashboard's deterministic scanner (lib/scanners/secrets.ts) so the
-// extension flags exactly what a Sentinel repo scan would — no separate, weaker
+// extension flags exactly what a Heimdall repo scan would — no separate, weaker
 // heuristic. Everything runs locally in the content script; the secret never
 // leaves the page.
 

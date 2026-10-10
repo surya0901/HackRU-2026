@@ -8,7 +8,6 @@ const watch = process.argv.includes('--watch');
 // MV3-safe) and emitted into dist/ alongside the static manifest/html/icons.
 const entryPoints = {
   background: 'src/background/index.ts',
-  'content-prompt-shield': 'src/content/prompt-shield.ts',
   'content-github': 'src/content/github-overlay.ts',
   'content-pagescan': 'src/content/page-scan.ts',
   popup: 'src/popup/index.tsx',

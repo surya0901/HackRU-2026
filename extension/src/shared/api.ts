@@ -1,5 +1,5 @@
-// Authenticated client for the Sentinel dashboard API. Mirrors the VS Code
-// extension's CloudClient: every call carries the `sk_sentinel_…` connection
+// Authenticated client for the Heimdall dashboard API. Mirrors the VS Code
+// extension's CloudClient: every call carries the the existing connection token connection
 // token as a Bearer header, hitting the same dual-auth routes the web app uses
 // (lib/auth.ts → resolveAuth). Lives only in the background service worker.
 
@@ -10,7 +10,7 @@ import type { AnalyzeMode, AnalyzeResult, CopilotTurn, CopilotResult } from './m
 
 async function req<T>(path: string, init?: RequestInit): Promise<T> {
   const token = await getToken();
-  if (!token) throw new Error('Not signed in. Open the Sentinel popup and connect your account.');
+  if (!token) throw new Error('Not signed in. Open the Heimdall popup and connect your account.');
   const base = await dashboardUrl();
   const res = await fetch(`${base}${path}`, {
     ...init,

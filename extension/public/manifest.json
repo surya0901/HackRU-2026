@@ -1,9 +1,9 @@
 {
   "manifest_version": 3,
-  "name": "Sentinel — AI Security Assistant",
-  "short_name": "Sentinel",
+  "name": "Heimdall — AI Security Assistant",
+  "short_name": "Heimdall",
   "version": "0.1.0",
-  "description": "GitHub Advanced Security for AI agents, in your browser. Prompt Shield, secret-leak prevention, GitHub trust overlay, agent/MCP discovery, and a Security Copilot wired to your real Sentinel dashboard.",
+  "description": "GitHub Advanced Security for AI agents, in your browser. Prompt Shield, secret-leak prevention, GitHub trust overlay, agent/MCP discovery, and a Security Copilot wired to your real Heimdall dashboard.",
   "icons": {
     "16": "icons/icon-16.png",
     "32": "icons/icon-32.png",
@@ -11,7 +11,7 @@
     "128": "icons/icon-128.png"
   },
   "action": {
-    "default_title": "Sentinel",
+    "default_title": "Heimdall",
     "default_popup": "popup.html",
     "default_icon": {
       "16": "icons/icon-16.png",

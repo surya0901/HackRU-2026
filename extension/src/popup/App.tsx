@@ -35,7 +35,7 @@ export function App() {
 
   const latest = state?.scans[0] ?? null;
   const trust = latest?.trustScore ?? null;
-  const siteRisk = page ? Math.max(0, ...page.agents.map((a) => a.riskScore), ...page.mcp.map((m) => m.riskScore)) : 0;
+  const siteRisk = page ? Math.max(0, ...page.agents.map((a) => a.riskScore), ...page.mcp.map((m) => m.riskScore), ...page.findings.map((f) => ({ critical: 90, high: 70, medium: 45, low: 20, info: 5 }[f.severity]))) : 0;
 
   const signIn = async () => {
     setErr(null);
@@ -91,7 +91,7 @@ export function App() {
       <div className="flex items-center gap-2" style={{ marginBottom: 12 }}>
         <Logo size={26} />
         <div style={{ flex: 1 }}>
-          <div style={{ fontWeight: 800, fontSize: 15 }}>Sentinel</div>
+          <div style={{ fontWeight: 800, fontSize: 15 }}>Heimdall</div>
           <div className="text-faint" style={{ fontSize: 10.5 }}>AI Security Assistant</div>
         </div>
         {state?.signedIn ? (
@@ -112,7 +112,7 @@ export function App() {
             <span style={{ fontWeight: 700, fontSize: 13 }}>Connect your account</span>
           </div>
           <p className="text-muted" style={{ fontSize: 11.5, lineHeight: 1.5, margin: '0 0 10px' }}>
-            Sign in to sync scans, run cloud analysis, and use the Security Copilot. Prompt Shield &amp; secret detection work without an account.
+            Sign in to sync repository scans, run cloud analysis, and use the Security Copilot. Passive website checks work locally without an account.
           </p>
           <div className="flex gap-2">
             <Btn variant="brand" onClick={signIn} disabled={busy === 'signin'} className="flex items-center justify-center gap-1" >
@@ -122,7 +122,7 @@ export function App() {
           </div>
           {showCode ? (
             <div className="flex gap-2" style={{ marginTop: 8 }}>
-              <input value={code} onChange={(e) => setCode(e.target.value)} placeholder="sk_sentinel_…"
+              <input value={code} onChange={(e) => setCode(e.target.value)} placeholder="connection code"
                 style={{ flex: 1, background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.12)', borderRadius: 9, padding: '7px 9px', color: '#e8eef6', fontSize: 11, fontFamily: 'ui-monospace' }} />
               <Btn variant="brand" onClick={signInCode}>Go</Btn>
             </div>
@@ -154,14 +154,14 @@ export function App() {
           <span style={{ fontWeight: 700, fontSize: 12.5, flex: 1 }}>Current site</span>
           {pageLoading ? <Loader2 size={13} className="spin" color="#64748b" /> : (
             <span style={{ fontSize: 10.5, fontWeight: 700, color: sevColor[trustSeverity(100 - siteRisk)] }}>
-              {siteRisk === 0 ? 'Clean' : `Risk ${siteRisk}`}
+              {siteRisk === 0 ? 'No signals' : `Risk ${siteRisk}`}
             </span>
           )}
         </div>
         <div className="flex gap-2">
           <Stat value={page?.agents.length ?? 0} label="Agents" color="#a371f7" />
           <Stat value={page?.mcp.length ?? 0} label="MCP" color="#56d4dd" />
-          <Stat value={latest?.findingsCount ?? 0} label="Findings" color={(latest?.findingsCount ?? 0) > 0 ? '#f97316' : '#3fb950'} />
+          <Stat value={page?.findings.length ?? 0} label="Web signals" color={(page?.findings.length ?? 0) > 0 ? '#f97316' : '#3fb950'} />
         </div>
         {page && page.agents.length > 0 ? (
           <div className="flex flex-wrap gap-1" style={{ marginTop: 9 }}>
@@ -173,6 +173,10 @@ export function App() {
           </div>
         ) : null}
       </Card>
+
+      {page ? <div className="text-faint" style={{ fontSize: 9.5, margin: '-4px 2px 10px' }}>
+        Passive DOM scan · {page.verification.baselineTs ? `${page.verification.fixed.length} fixed · ${page.verification.added.length} new · ${page.verification.changed.length} changed` : 'baseline saved'} · headers/CORS may limit coverage
+      </div> : null}
 
       {/* Recent alerts */}
       <Card style={{ marginBottom: 10 }}>
@@ -209,7 +213,7 @@ export function App() {
       {showSettings && state ? <SettingsPanel settings={state.settings} onChange={refresh} /> : null}
 
       <div className="text-faint" style={{ fontSize: 9.5, textAlign: 'center', marginTop: 12 }}>
-        <Boxes size={9} style={{ display: 'inline', verticalAlign: 'middle' }} /> Detection runs locally · synced to your Sentinel dashboard
+        <Boxes size={9} style={{ display: 'inline', verticalAlign: 'middle' }} /> Website evidence stays local · repository scans can sync
       </div>
     </div>
   );
@@ -230,8 +234,6 @@ function SettingsPanel({ settings, onChange }: { settings: Settings; onChange: (
     onChange();
   };
   const rows: [keyof Settings, string][] = [
-    ['promptShield', 'Prompt Shield'],
-    ['secretGuard', 'Secret leak prevention'],
     ['githubOverlay', 'GitHub overlay'],
     ['notifications', 'Notifications'],
   ];
@@ -245,7 +247,7 @@ function SettingsPanel({ settings, onChange }: { settings: Settings; onChange: (
       ))}
       <div style={{ marginTop: 6 }}>
         <div className="text-faint" style={{ fontSize: 10, marginBottom: 4 }}>Dashboard URL</div>
-        <input value={s.dashboardUrl} onChange={(e) => setUrl(e.target.value)}
+        <input type="password" aria-label="Dashboard connection URL" autoComplete="off" value={s.dashboardUrl} onChange={(e) => setUrl(e.target.value)}
           style={{ width: '100%', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.12)', borderRadius: 8, padding: '6px 8px', color: '#e8eef6', fontSize: 11, fontFamily: 'ui-monospace' }} />
       </div>
     </Card>

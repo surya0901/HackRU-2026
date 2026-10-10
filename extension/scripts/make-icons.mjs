@@ -1,4 +1,4 @@
-// Generates the Sentinel toolbar icons (16/32/48/128 px PNG) from scratch — no
+// Generates the Heimdall toolbar icons (16/32/48/128 px PNG) from scratch — no
 // image libraries, no binary assets. Draws the brand shield (dark navy face,
 // cyan edge, glowing core) into an RGBA buffer and encodes a valid PNG with the
 // built-in zlib. Keeps the repo free of committed binaries and guarantees the

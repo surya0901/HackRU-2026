@@ -1,4 +1,4 @@
-// Shared strict types for the Sentinel Chrome extension. These mirror the
+// Shared strict types for the Heimdall Chrome extension. These mirror the
 // dashboard API shapes (lib/db/schema.ts, app/api/extension/*, app/api/agent-scan)
 // so the extension and the backend speak exactly the same language.
 
@@ -112,6 +112,23 @@ export interface DetectedMcp {
   riskScore: number;
 }
 
+/** Evidence collected without submitting forms, executing attacks, or changing the page. */
+export interface WebsiteFinding {
+  id: string;
+  severity: Severity;
+  title: string;
+  evidence: string;
+  recommendation: string;
+}
+
+export interface WebsiteVerification {
+  baselineTs: number | null;
+  added: string[];
+  fixed: string[];
+  changed: string[];
+  unchanged: string[];
+}
+
 export type NotificationType =
   | 'critical-finding'
   | 'secret-leak'
@@ -122,7 +139,7 @@ export type NotificationType =
   | 'autofix-pr'
   | 'trust-change';
 
-export interface SentinelNotification {
+export interface HeimdallNotification {
   id: string;
   type: NotificationType;
   severity: Severity;

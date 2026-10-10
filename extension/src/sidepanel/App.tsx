@@ -1,4 +1,4 @@
-// Side Panel (FEATURE 7 + 10) — a mini Sentinel dashboard with the Security
+// Side Panel (FEATURE 7 + 10) — a mini Heimdall dashboard with the Security
 // Copilot. Tabs: Overview, Findings, Agents, MCP, Notifications, Activity,
 // Copilot, Recent Scans. Every panel is backed by real data: synced scans from
 // the dashboard, the live page agent/MCP scan, right-click analysis results, and
@@ -11,7 +11,7 @@ import {
 } from 'lucide-react';
 import { send } from '../shared/messages';
 import type { BackgroundState, PageScan, AnalyzeResult, AnalyzeMode, CopilotTurn } from '../shared/messages';
-import type { SentinelNotification } from '../shared/types';
+import type { HeimdallNotification } from '../shared/types';
 import { Logo, ScoreRing, Card, Stat, Btn, SevBadge, relTime, sevColor } from '../ui/components';
 
 type Tab = 'overview' | 'findings' | 'agents' | 'mcp' | 'notifications' | 'activity' | 'copilot' | 'scans';
@@ -46,19 +46,19 @@ export function App() {
   useEffect(() => {
     void refresh();
     send({ type: 'ANALYZE_ACTIVE_PAGE' }).then(setPage).catch(() => undefined);
-    chrome.storage.local.get('sentinel.lastAnalysis').then((o) => {
-      const a = o['sentinel.lastAnalysis'] as StoredAnalysis | undefined;
+    chrome.storage.local.get('heimdall.lastAnalysis').then((o) => {
+      const a = o['heimdall.lastAnalysis'] as StoredAnalysis | undefined;
       if (a) {
         setAnalysis(a);
         setTab('findings');
       }
     });
     const onChange = (changes: { [k: string]: chrome.storage.StorageChange }, area: string) => {
-      if (area === 'local' && changes['sentinel.lastAnalysis']) {
-        setAnalysis(changes['sentinel.lastAnalysis'].newValue as StoredAnalysis);
+      if (area === 'local' && changes['heimdall.lastAnalysis']) {
+        setAnalysis(changes['heimdall.lastAnalysis'].newValue as StoredAnalysis);
         setTab('findings');
       }
-      if (area === 'local' && changes['sentinel.notifications']) void refresh();
+      if (area === 'local' && changes['heimdall.notifications']) void refresh();
     };
     chrome.storage.onChanged.addListener(onChange);
     return () => chrome.storage.onChanged.removeListener(onChange);
@@ -72,7 +72,7 @@ export function App() {
       <div className="flex items-center gap-2" style={{ padding: '12px 14px', borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
         <Logo size={24} />
         <div style={{ flex: 1 }}>
-          <div style={{ fontWeight: 800, fontSize: 14 }}>Sentinel</div>
+          <div style={{ fontWeight: 800, fontSize: 14 }}>Heimdall</div>
           <div className="text-faint" style={{ fontSize: 10 }}>{state?.account?.email ?? (state?.signedIn ? 'Connected' : 'Not connected')}</div>
         </div>
         <button className="btn-ghost" style={{ padding: 7 }} onClick={refresh} title="Refresh"><RefreshCw size={13} /></button>
@@ -125,7 +125,7 @@ function Empty({ children }: { children: React.ReactNode }) {
 
 function Overview({ state, page }: { state: BackgroundState; page: PageScan | null }) {
   const latest = state.scans[0] ?? null;
-  const siteRisk = page ? Math.max(0, ...page.agents.map((a) => a.riskScore), ...page.mcp.map((m) => m.riskScore)) : 0;
+  const siteRisk = page ? Math.max(0, ...page.agents.map((a) => a.riskScore), ...page.mcp.map((m) => m.riskScore), ...page.findings.map((f) => ({ critical: 90, high: 70, medium: 45, low: 20, info: 5 }[f.severity]))) : 0;
   return (
     <div className="flex flex-col gap-3">
       <Card className="flex items-center gap-4">
@@ -146,16 +146,23 @@ function Overview({ state, page }: { state: BackgroundState; page: PageScan | nu
         <div className="flex gap-2" style={{ marginTop: 8 }}>
           <Stat value={page?.agents.length ?? 0} label="Agents" color="#a371f7" />
           <Stat value={page?.mcp.length ?? 0} label="MCP" color="#56d4dd" />
-          <Stat value={state.notifications.filter((n) => !n.read).length} label="Alerts" color="#f97316" />
+          <Stat value={page?.findings.length ?? 0} label="Web signals" color="#f97316" />
         </div>
         <div className="text-faint" style={{ fontSize: 10, marginTop: 8, wordBreak: 'break-all' }}>{page?.origin ?? ''}</div>
+        {page ? <div className="text-faint" style={{ fontSize: 10, marginTop: 6 }}>
+          {page.verification.baselineTs ? `${page.verification.fixed.length} fixed · ${page.verification.added.length} new · ${page.verification.changed.length} evidence changed · ${page.verification.unchanged.length} unchanged` : 'Baseline saved for before/after verification'}
+          <br />Passive DOM evidence only; headers, CORS and extension access can limit coverage.
+        </div> : null}
+        {page?.findings.slice(0, 3).map((finding) => <div key={finding.id} style={{ marginTop: 8, paddingTop: 8, borderTop: '1px solid rgba(255,255,255,0.08)' }}>
+          <div className="flex items-center gap-2"><SevBadge sev={finding.severity} /><span style={{ fontSize: 11.5, fontWeight: 700 }}>{finding.title}</span></div>
+          <div className="text-faint" style={{ fontSize: 10, marginTop: 4, wordBreak: 'break-word' }}>Evidence: {finding.evidence}</div>
+        </div>)}
       </Card>
 
       <Card>
         <SectionTitle icon={<ShieldCheck size={13} color="#86efac" />} text="Protection" />
         <div className="flex flex-col gap-1" style={{ marginTop: 6, fontSize: 12 }}>
-          <Toggle label="Prompt Shield" on={state.settings.promptShield} />
-          <Toggle label="Secret leak prevention" on={state.settings.secretGuard} />
+          <Toggle label="Passive website scan" on />
           <Toggle label="GitHub overlay" on={state.settings.githubOverlay} />
           <Toggle label="Notifications" on={state.settings.notifications} />
         </div>
@@ -225,8 +232,8 @@ function Findings({ analysis, latest }: { analysis: StoredAnalysis | null; lates
   }
   return (
     <Empty>
-      {latest ? <>Latest scan <b>{latest.repo}</b> has <b>{latest.findingsCount}</b> findings.<br />Open the dashboard for full detail, or right-click any code on a page → <i>Analyze with Sentinel</i>.</>
-        : <>Highlight code, JSON, YAML or a stack trace on any page, right-click → <i>Analyze with Sentinel</i> to see findings here.</>}
+      {latest ? <>Latest scan <b>{latest.repo}</b> has <b>{latest.findingsCount}</b> findings.<br />Open the dashboard for full detail, or right-click any code on a page → <i>Analyze with Heimdall</i>.</>
+        : <>Highlight code, JSON, YAML or a stack trace on any page, right-click → <i>Analyze with Heimdall</i> to see findings here.</>}
     </Empty>
   );
 }
@@ -311,14 +318,14 @@ function Copilot({ signedIn }: { signedIn: boolean }) {
     }
   };
 
-  if (!signedIn) return <Empty>Connect your Sentinel account (from the popup) to use the Security Copilot. It answers using your real scan findings.</Empty>;
+  if (!signedIn) return <Empty>Connect your Heimdall account (from the popup) to use the Security Copilot. It answers using your real scan findings.</Empty>;
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
       <div style={{ flex: 1, overflowY: 'auto' }} className="flex flex-col gap-2">
         {history.length === 0 ? (
           <div className="flex flex-col gap-2">
-            <div className="text-muted" style={{ fontSize: 12, lineHeight: 1.5 }}>Ask Sentinel about your findings, agents, MCP servers, or how to fix something. Answers are grounded in your real scans.</div>
+            <div className="text-muted" style={{ fontSize: 12, lineHeight: 1.5 }}>Ask Heimdall about your findings, agents, MCP servers, or how to fix something. Answers are grounded in your real scans.</div>
             {SUGGESTED.map((s) => (
               <button key={s} onClick={() => ask(s)} className="glass glass-hover" style={{ textAlign: 'left', padding: '9px 11px', fontSize: 12, color: '#cbd5e1', cursor: 'pointer' }}>{s}</button>
             ))}
@@ -363,7 +370,7 @@ function Notifications({ state, onChange }: { state: BackgroundState; onChange: 
   );
 }
 
-function NotifRow({ n }: { n: SentinelNotification }) {
+function NotifRow({ n }: { n: HeimdallNotification }) {
   return (
     <Card style={{ opacity: n.read ? 0.6 : 1, borderLeft: `3px solid ${sevColor[n.severity]}` }}>
       <div className="flex items-center gap-2" style={{ marginBottom: 4 }}>
@@ -380,7 +387,7 @@ function NotifRow({ n }: { n: SentinelNotification }) {
 function ActivityFeed({ state }: { state: BackgroundState }) {
   const items = [
     ...state.notifications.map((n) => ({ ts: n.createdAt, label: n.title, sub: n.body, sev: n.severity })),
-    ...state.scans.map((s) => ({ ts: new Date(s.createdAt).getTime(), label: `Scanned ${s.repo}`, sub: `Trust ${s.trustScore} · ${s.findingsCount} findings`, sev: (s.trustScore >= 70 ? 'low' : s.trustScore >= 50 ? 'high' : 'critical') as SentinelNotification['severity'] })),
+    ...state.scans.map((s) => ({ ts: new Date(s.createdAt).getTime(), label: `Scanned ${s.repo}`, sub: `Trust ${s.trustScore} · ${s.findingsCount} findings`, sev: (s.trustScore >= 70 ? 'low' : s.trustScore >= 50 ? 'high' : 'critical') as HeimdallNotification['severity'] })),
   ].sort((a, b) => b.ts - a.ts).slice(0, 40);
   if (items.length === 0) return <Empty>No activity yet.</Empty>;
   return (

@@ -1,7 +1,7 @@
 {
-  "name": "sentinel-chrome",
-  "displayName": "Sentinel — AI Security Assistant",
-  "description": "GitHub Advanced Security for AI agents, in your browser. Prompt Shield, secret-leak prevention, GitHub trust overlay, agent/MCP discovery, and a Security Copilot — all wired to your real Sentinel dashboard.",
+  "name": "heimdall-chrome",
+  "displayName": "Heimdall — AI Security Assistant",
+  "description": "GitHub Advanced Security for AI agents, in your browser. Prompt Shield, secret-leak prevention, GitHub trust overlay, agent/MCP discovery, and a Security Copilot — all wired to your real Heimdall dashboard.",
   "version": "0.1.0",
   "private": true,
   "type": "module",

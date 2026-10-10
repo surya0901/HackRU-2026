@@ -47,7 +47,7 @@ async function github(path, signal) {
 
 const MAX_SOURCE_FILES = 72;
 const MAX_SOURCE_BYTES = 1_400_000;
-const HISTORY_KEY = 'sentinel-scan-history-v2';
+const HISTORY_KEY = 'heimdall-scan-history-v2';
 const TEXT_EXTENSIONS = /\.(?:js|jsx|ts|tsx|mjs|cjs|py|go|rb|php|java|kt|rs|cs|json|ya?ml|toml|env|ini|sh|sql|md)$/i;
 const IMPORTANT_FILES = /(?:^|\/)(?:package\.json|requirements(?:-[^/]+)?\.txt|go\.mod|pyproject\.toml|dockerfile|\.env(?:\.[^/]+)?|mcp[^/]*\.json|[^/]*(?:agent|auth|security|route|api|server|tool)[^/]*)$/i;
 
@@ -494,7 +494,7 @@ function attackPathMarkup(scan) {
 }
 
 function dependencyMarkup(scan) {
-  if (!scan.dependencies.length) return '<div class="empty-state"><h3>No pinned dependency manifests were read</h3><p>Sentinel checks package.json, requirements files, and go.mod when exact versions are available.</p></div>';
+  if (!scan.dependencies.length) return '<div class="empty-state"><h3>No pinned dependency manifests were read</h3><p>Heimdall checks package.json, requirements files, and go.mod when exact versions are available.</p></div>';
   const vulnerable = new Map(scan.osv.vulnerabilities.map(item => [`${item.ecosystem}:${item.name}:${item.version}`, item.id]));
   return `<div class="dependency-summary"><article><small>PINNED PACKAGES</small><b>${scan.dependencies.length}</b></article><article><small>OSV MATCHES</small><b>${scan.osv.vulnerabilities.length}</b></article><article><small>CHECK STATUS</small><b>${scan.osv.available ? 'Live' : 'Unavailable'}</b></article></div>
     ${!scan.osv.available ? `<p class="service-warning">OSV could not be reached during this scan. Source analysis still completed.</p>` : ''}
@@ -516,14 +516,14 @@ function historyMarkup(scan) {
 }
 
 function reportMarkdown(scan) {
-  return `# Sentinel security report\n\nRepository: ${scan.meta.full_name}\nBranch: ${scan.branch}\nCommit: ${scan.commit}\nScanned: ${scan.createdAt}\nScope: ${scan.scope}\nPosture indicator: ${scan.score}/100\n\n## Summary\n\n- ${scan.sourceStats.read} source files analyzed\n- ${scan.dependencies.length} pinned dependencies checked\n- ${scan.osv.vulnerabilities.length} OSV advisory matches\n- ${scan.findings.length} prioritized findings\n\n## Findings\n\n${scan.findings.map((finding, index) => `${index + 1}. **[${finding.sev.toUpperCase()}] ${finding.title}** (${finding.id})\n   - Evidence: ${finding.evidence}${finding.line ? `:${finding.line}` : ''}\n   - Classification: ${finding.mapping} · ${finding.kind}\n   - Detail: ${finding.detail}\n   - Fix: ${finding.fix}`).join('\n\n')}\n\n> Sentinel performs bounded static analysis of public source and OSV dependency checks. It does not execute repository code or claim exploitability without runtime validation.\n`;
+  return `# Heimdall security report\n\nRepository: ${scan.meta.full_name}\nBranch: ${scan.branch}\nCommit: ${scan.commit}\nScanned: ${scan.createdAt}\nScope: ${scan.scope}\nPosture indicator: ${scan.score}/100\n\n## Summary\n\n- ${scan.sourceStats.read} source files analyzed\n- ${scan.dependencies.length} pinned dependencies checked\n- ${scan.osv.vulnerabilities.length} OSV advisory matches\n- ${scan.findings.length} prioritized findings\n\n## Findings\n\n${scan.findings.map((finding, index) => `${index + 1}. **[${finding.sev.toUpperCase()}] ${finding.title}** (${finding.id})\n   - Evidence: ${finding.evidence}${finding.line ? `:${finding.line}` : ''}\n   - Classification: ${finding.mapping} · ${finding.kind}\n   - Detail: ${finding.detail}\n   - Fix: ${finding.fix}`).join('\n\n')}\n\n> Heimdall performs bounded static analysis of public source and OSV dependency checks. It does not execute repository code or claim exploitability without runtime validation.\n`;
 }
 
 function reportSarif(scan) {
   const rules = [...new Map(scan.findings.map(finding => [finding.rule || finding.id, finding])).values()];
   return {
     version: '2.1.0', $schema: 'https://json.schemastore.org/sarif-2.1.0.json', runs: [{
-      tool: { driver: { name: 'Sentinel', informationUri: location.origin, rules: rules.map(finding => ({ id: finding.rule || finding.id, name: finding.title, shortDescription: { text: finding.title }, help: { text: finding.fix } })) } },
+      tool: { driver: { name: 'Heimdall', informationUri: location.origin, rules: rules.map(finding => ({ id: finding.rule || finding.id, name: finding.title, shortDescription: { text: finding.title }, help: { text: finding.fix } })) } },
       results: scan.findings.map(finding => ({
         ruleId: finding.rule || finding.id,
         level: finding.sev === 'critical' || finding.sev === 'high' ? 'error' : finding.sev === 'medium' ? 'warning' : 'note',
@@ -541,7 +541,7 @@ function consoleMarkup(scan) {
   const improvement = Math.min(100, scan.score + scan.findings.reduce((total, finding) => total + finding.points, 0));
   return `
     <div class="console-head">
-      <div><button id="backHome" type="button">← Site</button><span class="console-brand"><img src="sentinel-logo.svg" alt=""> Sentinel Console</span></div>
+      <div><button id="backHome" type="button">← Site</button><span class="console-brand"><img src="heimdall-logo.svg" alt=""> Heimdall Console</span></div>
       <div><span class="live-data">● Live source + OSV</span><button id="rescanRepo" type="button">Rescan</button><button id="exportReport" type="button">Export</button></div>
     </div>
     <div class="console-shell">
@@ -569,7 +569,7 @@ function consoleMarkup(scan) {
           <div class="finding-list">${findingRows(scan)}</div>
         </section>
         <section id="panel-paths" role="tabpanel" aria-labelledby="tab-paths" data-panel="paths" hidden>
-          <header class="workspace-title"><div><small>CAUSAL MODEL</small><h2>Attack paths from evidence to impact</h2><p>Observed source is separated from inferred exploit impact. Sentinel does not claim an exploit ran.</p></div></header>
+          <header class="workspace-title"><div><small>CAUSAL MODEL</small><h2>Attack paths from evidence to impact</h2><p>Observed source is separated from inferred exploit impact. Heimdall does not claim an exploit ran.</p></div></header>
           ${attackPathMarkup(scan)}
         </section>
         <section id="panel-dependencies" role="tabpanel" aria-labelledby="tab-dependencies" data-panel="dependencies" hidden>
@@ -588,15 +588,15 @@ function consoleMarkup(scan) {
         <section id="panel-twin" role="tabpanel" aria-labelledby="tab-twin" data-panel="twin" hidden>
           <header class="workspace-title"><div><small>COUNTERFACTUAL MODEL</small><h2>Preview controls before merging</h2><p>Review how this heuristic posture indicator could change. Values are calculated from the visible finding weights.</p></div></header>
           <div class="twin-grid"><article><small>CURRENT</small><strong>${scan.score}</strong><span>Posture indicator</span><div class="radius"><i style="width:${100 - scan.score}%"></i></div><p>${scan.findings.length} active signals</p></article><div class="twin-arrow">→</div><article class="after"><small>IF ALL VISIBLE SIGNALS ARE ADDRESSED</small><strong>${improvement}</strong><span>Modeled indicator</span><div class="radius"><i style="width:${100 - improvement}%"></i></div><p>Requires verification after changes</p></article></div>
-          <div class="console-card impact"><h3>What the model assumes</h3><p>Each visible finding’s weight is removed only when its proposed control is selected. Sentinel does not claim the code is fixed until a follow-up scan and test evidence confirm it.</p><button id="applyAll" type="button">Download the fix plan</button></div>
+          <div class="console-card impact"><h3>What the model assumes</h3><p>Each visible finding’s weight is removed only when its proposed control is selected. Heimdall does not claim the code is fixed until a follow-up scan and test evidence confirm it.</p><button id="applyAll" type="button">Download the fix plan</button></div>
         </section>
         <section id="panel-history" role="tabpanel" aria-labelledby="tab-history" data-panel="history" hidden>
-          <header class="workspace-title"><div><small>REGRESSION VIEW</small><h2>What changed since the last commit</h2><p>Sentinel fingerprints findings by rule, file, and line so rescans can separate new, fixed, and unchanged risk.</p></div></header>
+          <header class="workspace-title"><div><small>REGRESSION VIEW</small><h2>What changed since the last commit</h2><p>Heimdall fingerprints findings by rule, file, and line so rescans can separate new, fixed, and unchanged risk.</p></div></header>
           ${historyMarkup(scan)}
         </section>
         <section id="panel-copilot" role="tabpanel" aria-labelledby="tab-copilot" data-panel="copilot" hidden>
           <header class="workspace-title"><div><small>SCAN GUIDE · GROUNDED IN THIS EVIDENCE</small><h2>Repository guide</h2><p>Ask about the visible findings and remediation order. Responses come from this scan, not a connected AI service.</p></div></header>
-          <div class="chat"><div id="messages" role="log" aria-live="polite"><article><b>Sentinel</b><p>I mapped ${scan.files.length} public files and found ${scan.findings.length} prioritized signals. Ask “What should I fix first?” or “How is the score calculated?”</p></article></div><form id="chatForm"><label class="sr-only" for="chatInput">Ask about this scan</label><input id="chatInput" autocomplete="off" placeholder="What should I fix first?"><button type="submit">Send</button></form></div>
+          <div class="chat"><div id="messages" role="log" aria-live="polite"><article><b>Heimdall</b><p>I mapped ${scan.files.length} public files and found ${scan.findings.length} prioritized signals. Ask “What should I fix first?” or “How is the score calculated?”</p></article></div><form id="chatForm"><label class="sr-only" for="chatInput">Ask about this scan</label><input id="chatInput" autocomplete="off" placeholder="What should I fix first?"><button type="submit">Send</button></form></div>
         </section>
       </main>
     </div>`;
@@ -622,7 +622,7 @@ function openConsole(scan) {
   lastFocused = document.activeElement;
   consoleElement.setAttribute('role', 'dialog');
   consoleElement.setAttribute('aria-modal', 'true');
-  consoleElement.setAttribute('aria-label', `Sentinel console for ${scan.meta.full_name}`);
+  consoleElement.setAttribute('aria-label', `Heimdall console for ${scan.meta.full_name}`);
   consoleElement.setAttribute('aria-hidden', 'false');
   consoleElement.tabIndex = -1;
   consoleElement.innerHTML = consoleMarkup(scan);
@@ -650,15 +650,15 @@ function openConsole(scan) {
     startScan(scan.repo.url);
   };
   const monitor = $('#monitorToggle', consoleElement);
-  monitor.checked = localStorage.getItem('sentinel-recent-repo') === scan.repo.url;
+  monitor.checked = localStorage.getItem('heimdall-recent-repo') === scan.repo.url;
   monitor.onchange = event => {
-    if (event.target.checked) localStorage.setItem('sentinel-recent-repo', scan.repo.url);
-    else localStorage.removeItem('sentinel-recent-repo');
+    if (event.target.checked) localStorage.setItem('heimdall-recent-repo', scan.repo.url);
+    else localStorage.removeItem('heimdall-recent-repo');
     showToast(event.target.checked ? 'Repository remembered on this device' : 'Repository removed from this device');
   };
   $('#applyAll', consoleElement).onclick = () => {
-    const content = `# Sentinel fix plan\n\nRepository: ${scan.meta.full_name}\nBranch: ${scan.branch}\nCommit: ${scan.commit}\nScope: ${scan.scope}\n\n${scan.findings.map((finding, index) => `${index + 1}. **${finding.title}** (${finding.id})\n   Evidence: ${finding.evidence}\n   Action: ${finding.fix}\n   Verification required after change.`).join('\n\n')}\n`;
-    download(`sentinel-${scan.repo.repo}-fix-plan.md`, content, 'text/markdown');
+    const content = `# Heimdall fix plan\n\nRepository: ${scan.meta.full_name}\nBranch: ${scan.branch}\nCommit: ${scan.commit}\nScope: ${scan.scope}\n\n${scan.findings.map((finding, index) => `${index + 1}. **${finding.title}** (${finding.id})\n   Evidence: ${finding.evidence}\n   Action: ${finding.fix}\n   Verification required after change.`).join('\n\n')}\n`;
+    download(`heimdall-${scan.repo.repo}-fix-plan.md`, content, 'text/markdown');
     showToast('Fix plan downloaded');
   };
   const chatForm = $('#chatForm', consoleElement);
@@ -679,7 +679,7 @@ function openConsole(scan) {
         ? `The posture indicator starts at 100 and subtracts visible structural-signal weights. This scan is ${scan.score}/100. It is a prioritization aid, not a guarantee.`
         : `This bounded static scan found ${scan.findings.length} findings across ${scan.sourceStats.read} source files and ${scan.dependencies.length} pinned dependencies. The top evidence is ${scan.findings[0].evidence}: ${scan.findings[0].detail}`;
     const messages = $('#messages', consoleElement);
-    messages.insertAdjacentHTML('beforeend', `<article class="user"><b>You</b><p>${esc(question)}</p></article><article><b>Sentinel</b><p>${esc(answer)}</p></article>`);
+    messages.insertAdjacentHTML('beforeend', `<article class="user"><b>You</b><p>${esc(question)}</p></article><article><b>Heimdall</b><p>${esc(answer)}</p></article>`);
     input.value = '';
     messages.scrollTop = messages.scrollHeight;
   };
@@ -709,7 +709,7 @@ function openFixDrawer(finding) {
   const closeDrawer = () => { drawer.remove(); drawerReturnFocus?.focus?.(); };
   $('button', drawer).onclick = closeDrawer;
   $('.download', drawer).onclick = () => {
-    download(`sentinel-${finding.id.toLowerCase()}-remediation.md`, `# ${finding.title}\n\n- Finding: ${finding.id}\n- Evidence: ${finding.evidence}${finding.line ? `:${finding.line}` : ''}\n- Mapping: ${finding.mapping}\n\n## Why it matters\n\n${finding.detail}\n\n## Recommended change\n\n${finding.fix}\n\n## Verification\n\nAdd a regression test, rerun Sentinel, and confirm this fingerprint no longer appears.\n`, 'text/markdown');
+    download(`heimdall-${finding.id.toLowerCase()}-remediation.md`, `# ${finding.title}\n\n- Finding: ${finding.id}\n- Evidence: ${finding.evidence}${finding.line ? `:${finding.line}` : ''}\n- Mapping: ${finding.mapping}\n\n## Why it matters\n\n${finding.detail}\n\n## Recommended change\n\n${finding.fix}\n\n## Verification\n\nAdd a regression test, rerun Heimdall, and confirm this fingerprint no longer appears.\n`, 'text/markdown');
     showToast('Remediation note downloaded');
   };
 }
@@ -731,9 +731,9 @@ function openExportDrawer(scan) {
   $('button[aria-label]', drawer).onclick = closeDrawer;
   $$('[data-export]', drawer).forEach(button => button.onclick = () => {
     const kind = button.dataset.export;
-    if (kind === 'markdown') download(`sentinel-${scan.repo.repo}-report.md`, reportMarkdown(scan), 'text/markdown');
-    if (kind === 'json') download(`sentinel-${scan.repo.repo}-evidence.json`, JSON.stringify({ ...scan, sources: undefined }, null, 2), 'application/json');
-    if (kind === 'sarif') download(`sentinel-${scan.repo.repo}.sarif`, JSON.stringify(reportSarif(scan), null, 2), 'application/sarif+json');
+    if (kind === 'markdown') download(`heimdall-${scan.repo.repo}-report.md`, reportMarkdown(scan), 'text/markdown');
+    if (kind === 'json') download(`heimdall-${scan.repo.repo}-evidence.json`, JSON.stringify({ ...scan, sources: undefined }, null, 2), 'application/json');
+    if (kind === 'sarif') download(`heimdall-${scan.repo.repo}.sarif`, JSON.stringify(reportSarif(scan), null, 2), 'application/sarif+json');
     showToast(`${kind === 'sarif' ? 'SARIF' : kind[0].toUpperCase() + kind.slice(1)} export downloaded`);
     closeDrawer();
   });
@@ -924,7 +924,7 @@ async function runEscrowProposal() {
 async function issueEscrowWarrant() {
   const nonce = crypto.getRandomValues(new Uint32Array(2));
   const payload = {
-    issuer: 'Sentinel Action Clearinghouse', subject: 'finance-agent-demo',
+    issuer: 'Heimdall Action Clearinghouse', subject: 'finance-agent-demo',
     mandate: escrowScenario.mandate, issuedAt: new Date().toISOString(),
     expiresAt: new Date(Date.now() + 60000).toISOString(), nonce: [...nonce].join('-')
   };

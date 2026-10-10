@@ -1,5 +1,5 @@
 // Shared React building blocks for the popup and side panel. Styled with the
-// Tailwind utilities + Sentinel design tokens defined in src/styles/app.css so
+// Tailwind utilities + Heimdall design tokens defined in src/styles/app.css so
 // both surfaces look like a slice of the dashboard.
 
 import type { CSSProperties, ReactNode } from 'react';

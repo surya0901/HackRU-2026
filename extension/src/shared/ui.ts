@@ -17,7 +17,7 @@ export function createOverlay(id: string): OverlayHandle {
   document.getElementById(id)?.remove();
   const host = document.createElement('div');
   host.id = id;
-  host.className = 'sentinel-overlay-host';
+  host.className = 'heimdall-overlay-host';
   host.style.cssText = 'all: initial; position: fixed; z-index: 2147483647;';
   const root = host.attachShadow({ mode: 'open' });
 

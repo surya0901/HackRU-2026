@@ -1,6 +1,6 @@
 // Account auth for the Chrome extension — the browser sibling of the VS Code
 // extension's AuthManager. Same backend handshake: open the Clerk-protected
-// /connect/extension page, which mints a `sk_sentinel_…` connection token and
+// /connect/extension page, which mints a the existing connection token connection token and
 // hands it back. We use chrome.identity.launchWebAuthFlow so the redirect lands
 // on the extension's own https://<id>.chromiumapp.org/ callback — no need to
 // know the extension id ahead of time. A paste-the-code fallback covers locked-
