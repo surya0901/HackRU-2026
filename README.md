@@ -1,12 +1,13 @@
-# HackRU 2026 — AI Application Security Platform
+# HackRU 2026 — Heimdall
 
-Heimdall is a GitHub-native security control plane for AI agents and MCP servers. It scans public repositories, maps agents and tools, traces trust-boundary crossings, and turns high-confidence findings into actionable fixes.
+Heimdall helps developers evaluate an unfamiliar repository before adding it to their project. It compares the developer's public project with the candidate tool, groups evidence-backed security findings into plain-language gaps, and prepares a redacted report that Gemini can turn into a project-specific integration plan.
 
 The product deliberately separates four evidence states: observed source evidence, inferred control gaps, simulated walkthroughs, and verified reruns. A scan is a prioritization aid, not proof that an application is safe.
 
 ## What is included
 
 - A polished browser-based security console in `web/`
+- A two-repository integration review: your project plus the tool you are considering
 - Real public-repository source inspection and rule-based findings
 - Dependency parsing with OSV vulnerability lookup
 - Secret redaction and entropy-based detection
@@ -14,6 +15,7 @@ The product deliberately separates four evidence states: observed source evidenc
 - JSON, Markdown, and SARIF report exports
 - Coverage limits and evidence confidence are surfaced in the console so teams can distinguish facts from heuristics
 - A Chrome extension in `extension/` for GitHub overlays, prompt protection, page scanning, and a side-panel security copilot
+- A protected Gemini endpoint template in `gemini-worker/`; Gemini receives redacted findings, not repository source or secret values
 
 ## Run the web demo
 
@@ -39,4 +41,4 @@ Only scan repositories and applications you own or have explicit authorization t
 
 ## Current scope
 
-The browser demo analyzes public repositories only. It is intentionally limited by GitHub API availability, source-file selection, browser memory, and static heuristics. It does not provide runtime verification, private-repository support, or a server-side audit trail yet. For production use, treat findings as reviewable evidence and validate controls in your own CI and runtime environment.
+The browser demo analyzes public repositories only. It is intentionally limited by GitHub API availability, source-file selection, browser memory, and static heuristics. Private-repository access is not implemented. Gemini is enabled only after the protected endpoint is deployed and configured; the public site never contains the API key. Treat findings as reviewable evidence and validate controls after integration in CI and the runtime environment.

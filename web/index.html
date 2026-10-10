@@ -11,6 +11,7 @@
 <title>Heimdall — Understand your project's security</title>
 <link rel="icon" href="heimdall-logo.svg" type="image/svg+xml">
 <link rel="stylesheet" href="styles.css">
+<script src="config.js"></script>
 </head>
 <body>
 <a class="skip-link" href="#main">Skip to main content</a>
@@ -31,7 +32,7 @@
 <div class="links">
 <a href="#journey">How it works</a>
 <a href="#fixes">What we check</a>
-<a href="#extension">Extension</a>
+<a href="#extension">Gemini</a>
 </div>
 <div class="actions">
 <button id="launchConsole" class="signin" type="button">Open console</button>
@@ -41,18 +42,21 @@
 </nav>
 <main id="main">
 <section class="hero wrap" id="top">
-<p class="hero-label">A simpler security check</p>
-<h1>Understand what could make<br>
-<em>your project unsafe.</em>
+<p class="hero-label">Before you integrate</p>
+<h1>Know if a tool is safe<br>
+<em>for your project.</em>
 </h1>
-<p class="lede">Paste a public GitHub link. Heimdall checks the files and packages, explains possible problems in everyday language, and shows you what to fix first.</p>
+<p class="lede">Compare your project with a public tool before adding it. Heimdall checks both repositories, explains possible gaps in everyday language, and gives Gemini evidence it can use to help you integrate safely.</p>
 <form id="scan" novalidate>
-<label class="sr-only" for="repo">Public GitHub repository URL</label>
-<input id="repo" type="url" inputmode="url" autocomplete="url" spellcheck="false" placeholder="https://github.com/username/repo" aria-describedby="repoHelp repoError">
-<button class="green" type="submit">Start scan <span aria-hidden="true">→</span></button>
+<div class="compare-inputs">
+<label><span>Your project</span><input id="repo" type="url" inputmode="url" autocomplete="url" spellcheck="false" placeholder="https://github.com/you/your-project" aria-describedby="repoHelp repoError"></label>
+<label><span>Tool you want to use</span><input id="toolRepo" type="url" inputmode="url" autocomplete="url" spellcheck="false" placeholder="https://github.com/owner/tool"></label>
+<label class="use-case"><span>What will you use it for? <em>Optional</em></span><input id="useCase" type="text" maxlength="180" placeholder="Example: add user login to my app"></label>
+</div>
+<button class="green" type="submit">Check before I use it <span aria-hidden="true">→</span></button>
 </form>
 <p class="form-error" id="repoError" role="alert"></p>
-<p class="hint" id="repoHelp"><span>Public repositories only</span><span aria-hidden="true">·</span><span>No credentials required</span><span aria-hidden="true">·</span> Try <button class="demo" type="button">OWASP/NodeGoat</button>
+<p class="hint" id="repoHelp"><span>Public repositories only</span><span aria-hidden="true">·</span><span>No credentials required</span><span aria-hidden="true">·</span> Try <button class="demo" type="button">an example comparison</button>
 </p>
 <div class="proof" aria-label="What Heimdall produces">
 <article>
@@ -311,27 +315,27 @@
 <div class="cards four simple-features">
 <article>
 <i>⌕</i>
-<small>1. CHECK</small>
-<h3>Scan your project</h3>
-<p>Give Heimdall a public GitHub link. It safely reads the public code without running or changing it.</p>
+<small>1. ADD BOTH LINKS</small>
+<h3>Show Heimdall your project and the tool</h3>
+<p>Paste two public GitHub links and explain what you want the new tool to do.</p>
 </article>
 <article>
 <i>!</i>
-<small>2. UNDERSTAND</small>
-<h3>See what needs attention</h3>
-<p>Get a short, prioritized list instead of a wall of warnings. Heimdall tells you which problem matters most.</p>
+<small>2. COMPARE</small>
+<h3>See the gaps before integration</h3>
+<p>Heimdall checks both repositories and groups technical evidence into a short, understandable review.</p>
 </article>
 <article>
 <i>⌁</i>
-<small>3. FIX</small>
-<h3>Follow clear next steps</h3>
-<p>Every problem explains what was found, why it matters, where it lives, and what to do next.</p>
+<small>3. CONTINUE IN GEMINI</small>
+<h3>Build a project-specific plan</h3>
+<p>Gemini receives a redacted Heimdall report and turns the verified evidence into ordered integration steps.</p>
 </article>
 <article>
 <i>✓</i>
 <small>4. CHECK AGAIN</small>
 <h3>Confirm the problem is gone</h3>
-<p>Scan again after making a change. Heimdall shows what was fixed, what is new, and what still needs work.</p>
+<p>After integration, scan again to see what was fixed, what remains, and what changed.</p>
 </article>
 </div>
 </section>
@@ -376,36 +380,36 @@
 </section>
 <section class="wrap block extension-showcase" id="extension">
 <div class="extension-copy">
-<small>Browser companion</small>
-<h2>Keep the check close while you work.</h2>
-<p>Open Heimdall from the browser toolbar on a GitHub pull request. The companion prototype explains the highest-priority path, keeps evidence in context, and hands the full investigation back to the console.</p>
+<small>Gemini handoff</small>
+<h2>Give Gemini security context it can trust.</h2>
+<p>Heimdall prepares a small, structured report containing repository names, redacted evidence, recommended changes, and honest coverage limits. Your source code and secret values are not sent.</p>
 <ul>
-<li><span>01</span> Detect the repository and pull request</li>
-<li><span>02</span> Surface the one finding that matters now</li>
-<li><span>03</span> Open the evidence, replay, or fix plan in one click</li>
+<li><span>01</span> Heimdall finds and groups the real scan evidence</li>
+<li><span>02</span> Gemini explains how it affects your intended use</li>
+<li><span>03</span> Heimdall checks the finished integration again</li>
 </ul>
-<button class="secondary" id="previewExtension" type="button">Preview the companion</button>
+<button class="secondary demo" id="previewExtension" type="button">Try the comparison</button>
 </div>
-<div class="browser-frame" aria-label="Chrome extension prototype preview">
-<header><span aria-hidden="true"><i></i><i></i><i></i></span><b>github.com / pull / 42</b><em>★</em></header>
+<div class="browser-frame" aria-label="Illustrative Gemini handoff preview">
+<header><span aria-hidden="true"><i></i><i></i><i></i></span><b>Gemini conversation</b><em>Illustrative</em></header>
 <div class="browser-body">
 <div class="ghost-page" aria-hidden="true"><i></i><i></i><i></i><i></i></div>
 <aside class="extension-panel">
-<div class="extension-brand"><img src="heimdall-logo.svg" alt=""><b>Heimdall</b><span>Beta</span></div>
-<small>CONTEXTUAL REVIEW</small>
-<h3>One path needs attention</h3>
-<p>Broad shell access can connect untrusted prompt input to runtime secrets.</p>
-<div class="mini-path"><span>Prompt</span><i>→</i><span>shell.exec</span><i>→</i><span class="risk">Secret</span></div>
-<button class="green demo" type="button">Open in Heimdall →</button>
+<div class="extension-brand"><img src="heimdall-logo.svg" alt=""><b>Heimdall report</b><span>Redacted</span></div>
+<small>PROJECT-SPECIFIC PLAN</small>
+<h3>Use this tool after two changes</h3>
+<p>Update the affected package and limit which project secrets the tool can access.</p>
+<div class="mini-path"><span>Evidence</span><i>→</i><span>Gemini plan</span><i>→</i><span>Verify</span></div>
+<button class="green demo" type="button">Run a real comparison</button>
 </aside>
 </div>
 </div>
 </section>
 <section class="wrap final" id="dashboard">
 <img src="heimdall-logo.svg" alt="">
-<h2>Know what needs attention before you publish.</h2>
-<p>Paste a public GitHub repository. Heimdall explains possible problems and gives you a clear place to start.</p>
-<button class="green demo">Scan the demo repository →</button>
+<h2>Check a tool before it enters your project.</h2>
+<p>Compare two public repositories, understand the gaps, and take an evidence-backed integration plan into Gemini.</p>
+<button class="green demo">Try an example comparison</button>
 </section>
 </main>
 <footer>

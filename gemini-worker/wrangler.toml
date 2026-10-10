@@ -1,0 +1,6 @@
+name = "heimdall-gemini"
+main = "worker.js"
+compatibility_date = "2026-10-10"
+
+[vars]
+ALLOWED_ORIGIN = "https://surya0901.github.io"

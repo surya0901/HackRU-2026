@@ -10,9 +10,12 @@ const bar = $('#bar');
 const modalTitle = $('#mt');
 const modalProgress = $('#mp');
 const repoInput = $('#repo');
+const toolRepoInput = $('#toolRepo');
+const useCaseInput = $('#useCase');
 const repoError = $('#repoError');
 let scanAbortController = null;
 let result = null;
+let integrationResult = null;
 let lastFocused = null;
 let replayTimer = null;
 let drawerReturnFocus = null;
@@ -447,6 +450,194 @@ async function startScan(value) {
     modalTitle.textContent = 'We could not complete this scan';
     modalProgress.textContent = error.message || 'Check the repository URL and try again.';
     repoError.textContent = error.message || 'The scan could not be completed.';
+  }
+}
+
+function publicFinding(finding) {
+  const plain = plainFinding(finding);
+  return {
+    id: finding.id,
+    severity: finding.sev,
+    title: plain.title,
+    explanation: plain.meaning,
+    recommended_action: plain.action,
+    evidence_location: finding.evidence,
+    line: finding.line || null,
+    source: finding.kind,
+    standard: finding.mapping
+  };
+}
+
+function buildIntegrationReview(project, tool, useCase) {
+  const toolCritical = tool.findings.filter(finding => finding.sev === 'critical').length;
+  const toolHigh = tool.findings.filter(finding => finding.sev === 'high').length;
+  const shared = new Map(project.dependencies.map(dep => [`${dep.ecosystem}:${dep.name}`, dep]));
+  const conflicts = tool.dependencies.filter(dep => {
+    const current = shared.get(`${dep.ecosystem}:${dep.name}`);
+    return current && current.version !== dep.version;
+  }).map(dep => ({ tool: dep, project: shared.get(`${dep.ecosystem}:${dep.name}`) }));
+  const broadTool = tool.findings.some(finding => /AGENT-TOOLS|CODE-SHELL|CODE-EVAL/.test(finding.rule || ''));
+  const projectSecrets = project.findings.some(finding => /SEC-|AGENT-ENV/.test(finding.rule || finding.id || ''));
+  const groups = [];
+  tool.findings.forEach((finding, index) => {
+    if (finding.sev === 'info') return;
+    const plain = plainFinding(finding);
+    const existing = groups.find(group => group.title === plain.title);
+    if (existing) existing.items.push(finding);
+    else groups.push({ title: plain.title, explanation: plain.meaning, action: plain.action, severity: finding.sev, index, items: [finding] });
+  });
+  const contextual = [];
+  if (broadTool && projectSecrets) contextual.push({
+    title: 'This tool may increase access to sensitive project data',
+    explanation: 'The tool contains command-running capability and your project contains secret-related signals. Heimdall cannot prove they connect until the integration is built.',
+    action: 'Give the tool only the files and environment values it needs, then test the boundary.',
+    evidence: 'Inferred from findings in both repositories'
+  });
+  if (conflicts.length) contextual.push({
+    title: `${conflicts.length} shared ${conflicts.length === 1 ? 'package uses' : 'packages use'} different versions`,
+    explanation: 'Different versions can create installation failures or reintroduce a security problem.',
+    action: 'Choose one supported version and run the project tests before merging.',
+    evidence: conflicts.slice(0, 5).map(item => `${item.tool.name}: project ${item.project.version}, tool ${item.tool.version}`).join(' · ')
+  });
+  const decision = toolCritical
+    ? { label: 'Do not add it yet', tone: 'stop', reason: 'The tool contains a critical warning that should be reviewed first.' }
+    : toolHigh || tool.osv.vulnerabilities.length
+      ? { label: 'Use it after making changes', tone: 'change', reason: 'The tool has important problems, but they may be manageable with the recommended changes.' }
+      : groups.length
+        ? { label: 'Review before using', tone: 'review', reason: 'Heimdall found a few areas worth checking before this tool reaches your project.' }
+        : { label: 'No major gap found', tone: 'clear', reason: 'No major warning appeared in the public files checked. This is not a complete security guarantee.' };
+  const report = {
+    schema_version: 'heimdall.integration-review.v1',
+    intended_use: useCase || 'Not provided',
+    decision,
+    project: { repository: project.meta.full_name, commit: project.commit, files_checked: project.sourceStats.read, findings: project.findings.slice(0, 15).map(publicFinding) },
+    candidate_tool: { repository: tool.meta.full_name, commit: tool.commit, files_checked: tool.sourceStats.read, findings: tool.findings.slice(0, 20).map(publicFinding) },
+    compatibility: { dependency_conflicts: conflicts.map(item => ({ name: item.tool.name, project_version: item.project.version, tool_version: item.tool.version })), contextual_gaps: contextual },
+    limitations: ['Public repositories only', 'Selected files are checked without executing code', 'Contextual gaps are inferred and require validation after integration']
+  };
+  return { project, tool, useCase, groups, contextual, conflicts, decision, report, createdAt: new Date().toISOString() };
+}
+
+function integrationMarkup(review) {
+  const endpointReady = Boolean(window.HEIMDALL_GEMINI_ENDPOINT);
+  const gapRows = [...review.contextual.map(gap => ({ ...gap, severity: 'context' })), ...review.groups].slice(0, 8);
+  return `
+    <div class="console-head">
+      <div><button id="backHome" type="button">← Site</button><span class="console-brand"><img src="heimdall-logo.svg" alt=""> Heimdall</span></div>
+      <div><button id="newComparison" type="button">New comparison</button><button id="exportIntegration" type="button">Export</button></div>
+    </div>
+    <main class="integration-main">
+      <section class="integration-hero ${esc(review.decision.tone)}">
+        <div><span>Integration review</span><h1>${esc(review.decision.label)}</h1><p>${esc(review.decision.reason)}</p></div>
+        <div class="integration-score"><strong>${review.tool.score}</strong><span>/100</span><small>Tool readiness</small></div>
+      </section>
+      <section class="repo-pair" aria-label="Repositories compared">
+        <article><small>Your project</small><h2>${esc(review.project.meta.full_name)}</h2><p>${review.project.sourceStats.read} files checked · ${review.project.findings.length} detailed findings</p></article>
+        <div aria-hidden="true">+</div>
+        <article><small>Tool you want to use</small><h2>${esc(review.tool.meta.full_name)}</h2><p>${review.tool.sourceStats.read} files checked · ${review.tool.findings.length} detailed findings</p></article>
+      </section>
+      ${review.useCase ? `<p class="integration-intent"><strong>Your plan:</strong> ${esc(review.useCase)}</p>` : ''}
+      <section class="integration-section"><header><div><small>Before you integrate</small><h2>What could affect your project</h2></div><p>Technical matches are grouped into plain-language problems.</p></header>
+        <div class="integration-gaps">${gapRows.length ? gapRows.map(gap => `<article><div><h3>${esc(gap.title)}${gap.items?.length > 1 ? `<span>Found in ${gap.items.length} places</span>` : ''}</h3><p>${esc(gap.explanation)}</p><strong>What to do: <span>${esc(gap.action)}</span></strong>${gap.evidence ? `<small>${esc(gap.evidence)}</small>` : ''}</div>${Number.isInteger(gap.index) ? `<button type="button" data-tool-fix="${gap.index}">Open evidence</button>` : ''}</article>`).join('') : '<div class="empty-state"><h3>No major compatibility gap was found</h3><p>Review the coverage limits and scan again after integration.</p></div>'}</div>
+      </section>
+      <section class="gemini-handoff">
+        <div><small>Gemini handoff</small><h2>Continue the work in your Gemini conversation</h2><p>Heimdall sends only repository names and redacted findings—not source code or secret values. Gemini can then explain the safest integration plan using this evidence.</p><div class="gemini-actions"><button id="copyGeminiReport" type="button">Copy report for Gemini</button><button id="sendGeminiReport" class="primary" type="button">${endpointReady ? 'Create Gemini plan' : 'Connect Gemini'}</button></div><p class="gemini-status" id="geminiStatus">${endpointReady ? 'Protected Gemini endpoint connected.' : 'Gemini is not connected on this deployment yet. The report can still be copied into Gemini.'}</p></div>
+        <div class="gemini-result" id="geminiResult"><strong>No AI-generated plan yet</strong><p>Heimdall’s decision above comes from the real repository scans. Gemini will explain that evidence; it will not create new findings.</p></div>
+      </section>
+      <p class="integration-limit">Heimdall checks selected public files and known package advisories without running either repository. Scan again after integration to verify what changed.</p>
+    </main>`;
+}
+
+function copyGeminiReport(review) {
+  const text = `I am considering adding ${review.tool.meta.full_name} to ${review.project.meta.full_name}. My intended use is: ${review.useCase || 'not specified'}. Use only this Heimdall evidence. Do not invent vulnerabilities. Explain the decision, give me an ordered integration plan, and list what must be verified afterward.\n\n${JSON.stringify(review.report, null, 2)}`;
+  return navigator.clipboard.writeText(text);
+}
+
+async function requestGeminiPlan(review, consoleElement) {
+  const status = $('#geminiStatus', consoleElement);
+  const output = $('#geminiResult', consoleElement);
+  if (!window.HEIMDALL_GEMINI_ENDPOINT) {
+    status.textContent = 'Gemini needs the protected server endpoint in gemini-worker/. Your API key must never be placed in this website.';
+    output.innerHTML = '<strong>Connection required</strong><p>Deploy the included protected endpoint, save GEMINI_API_KEY as a server secret, and set its URL in web/config.js.</p>';
+    return;
+  }
+  status.textContent = 'Creating a plan from Heimdall’s redacted evidence…';
+  output.innerHTML = '<strong>Working…</strong><p>Gemini is reading the structured comparison.</p>';
+  try {
+    const response = await fetch(window.HEIMDALL_GEMINI_ENDPOINT, { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ report: review.report }) });
+    if (!response.ok) throw new Error(`Gemini endpoint returned ${response.status}`);
+    const plan = await response.json();
+    const steps = Array.isArray(plan.steps) ? plan.steps : [];
+    output.innerHTML = `<strong>${esc(plan.summary || 'Integration plan')}</strong><p>${esc(plan.why || '')}</p>${steps.length ? `<ol>${steps.map(step => `<li>${esc(step)}</li>`).join('')}</ol>` : ''}${plan.verify ? `<p><b>Verify:</b> ${esc(plan.verify)}</p>` : ''}`;
+    status.textContent = 'Plan created from the current Heimdall report.';
+  } catch (error) {
+    status.textContent = 'Gemini could not be reached. The evidence report is still available to copy.';
+    output.innerHTML = `<strong>Connection failed</strong><p>${esc(error.message)}</p>`;
+  }
+}
+
+function openIntegrationConsole(review) {
+  let consoleElement = $('#console');
+  if (!consoleElement) {
+    consoleElement = document.createElement('div');
+    consoleElement.id = 'console';
+    document.body.append(consoleElement);
+  }
+  consoleElement.setAttribute('role', 'dialog');
+  consoleElement.setAttribute('aria-modal', 'true');
+  consoleElement.setAttribute('aria-label', `Integration review for ${review.tool.meta.full_name}`);
+  consoleElement.setAttribute('aria-hidden', 'false');
+  consoleElement.tabIndex = -1;
+  consoleElement.innerHTML = integrationMarkup(review);
+  consoleElement.classList.add('open');
+  document.body.style.overflow = 'hidden';
+  consoleElement.focus();
+  $('#backHome', consoleElement).onclick = () => closeConsole(consoleElement);
+  $('#newComparison', consoleElement).onclick = () => closeConsole(consoleElement);
+  $$('[data-tool-fix]', consoleElement).forEach(button => button.onclick = () => openFixDrawer(review.tool.findings[Number(button.dataset.toolFix)]));
+  $('#copyGeminiReport', consoleElement).onclick = async () => {
+    try { await copyGeminiReport(review); showToast('Gemini report copied'); } catch (_) { showToast('Copy was blocked by the browser'); }
+  };
+  $('#sendGeminiReport', consoleElement).onclick = () => requestGeminiPlan(review, consoleElement);
+  $('#exportIntegration', consoleElement).onclick = () => download(`heimdall-${review.project.repo.repo}-${review.tool.repo.repo}-integration.json`, JSON.stringify(review.report, null, 2), 'application/json');
+}
+
+async function startIntegrationReview(projectValue, toolValue, useCase = '') {
+  const projectRepo = parseRepository(projectValue);
+  const toolRepo = parseRepository(toolValue);
+  if (!projectRepo || !toolRepo) {
+    repoError.textContent = 'Enter complete public GitHub links for both your project and the tool you want to use.';
+    (!projectRepo ? repoInput : toolRepoInput).focus();
+    return;
+  }
+  repoError.textContent = '';
+  if (scanAbortController) scanAbortController.abort();
+  scanAbortController = new AbortController();
+  openModal();
+  bar.classList.remove('indeterminate');
+  try {
+    modalTitle.textContent = 'Checking your project';
+    const project = await analyzeRepository(projectRepo, scanAbortController.signal, (stage, message) => {
+      modalProgress.textContent = message;
+      bar.style.width = `${({ metadata: 8, source: 20, dependencies: 36, analysis: 46 })[stage] || 16}%`;
+    });
+    modalTitle.textContent = 'Checking the tool';
+    const tool = await analyzeRepository(toolRepo, scanAbortController.signal, (stage, message) => {
+      modalProgress.textContent = message;
+      bar.style.width = `${({ metadata: 54, source: 68, dependencies: 84, analysis: 94 })[stage] || 62}%`;
+    });
+    integrationResult = buildIntegrationReview(project, tool, String(useCase || '').trim());
+    result = project;
+    bar.style.width = '100%';
+    modalTitle.textContent = 'Comparison ready';
+    modalProgress.textContent = `${project.meta.name} and ${tool.meta.name} checked without running their code.`;
+    window.setTimeout(() => { closeModal(false); openIntegrationConsole(integrationResult); }, 350);
+  } catch (error) {
+    if (error.name === 'AbortError') return;
+    bar.style.width = '0%';
+    modalTitle.textContent = 'We could not complete the comparison';
+    modalProgress.textContent = error.message || 'Check both repository links and try again.';
+    repoError.textContent = error.message || 'The comparison could not be completed.';
   }
 }
 
@@ -1091,22 +1282,17 @@ function setupActionEscrow() {
 }
 
 function setupLandingInteractions() {
-  $('#scan').onsubmit = event => { event.preventDefault(); startScan(repoInput.value); };
-  repoInput.addEventListener('input', () => { repoInput.removeAttribute('aria-invalid'); repoError.textContent = ''; });
+  $('#scan').onsubmit = event => { event.preventDefault(); startIntegrationReview(repoInput.value, toolRepoInput.value, useCaseInput.value); };
+  [repoInput, toolRepoInput].forEach(input => input.addEventListener('input', () => { input.removeAttribute('aria-invalid'); repoError.textContent = ''; }));
   $$('.demo').forEach(button => button.onclick = () => {
-    repoInput.value = 'https://github.com/OWASP/NodeGoat';
-    startScan(repoInput.value);
+    repoInput.value = 'https://github.com/surya0901/HackRU-2026';
+    toolRepoInput.value = 'https://github.com/OWASP/NodeGoat';
+    useCaseInput.value = 'Use the tool as a learning example inside my security project';
+    startIntegrationReview(repoInput.value, toolRepoInput.value, useCaseInput.value);
   });
   $('#close').onclick = () => closeModal(true);
-  $('#launchConsole').onclick = () => result ? openConsole(result) : startScan('https://github.com/OWASP/NodeGoat');
-  $('#agentButton').onclick = () => result ? openConsole(result) : startScan('https://github.com/OWASP/NodeGoat');
-  $('#previewExtension').onclick = () => {
-    const panel = $('.extension-panel');
-    panel.classList.add('highlight');
-    panel.scrollIntoView({ behavior: 'smooth', block: 'center' });
-    showToast('The companion stays beside the active GitHub page');
-    window.setTimeout(() => panel.classList.remove('highlight'), 1600);
-  };
+  $('#launchConsole').onclick = () => integrationResult ? openIntegrationConsole(integrationResult) : startIntegrationReview('https://github.com/surya0901/HackRU-2026', 'https://github.com/OWASP/NodeGoat', 'Use the tool as a learning example inside my security project');
+  $('#agentButton').onclick = () => integrationResult ? openIntegrationConsole(integrationResult) : startIntegrationReview('https://github.com/surya0901/HackRU-2026', 'https://github.com/OWASP/NodeGoat', 'Use the tool as a learning example inside my security project');
   $('#playReplay').onclick = playFlightRecorder;
   $('#containPath').onclick = () => {
     flightContained = true;
