@@ -1,6 +1,6 @@
 // Generates the Heimdall toolbar icons (16/32/48/128 px PNG) from scratch — no
-// image libraries, no binary assets. Draws the brand shield (dark navy face,
-// cyan edge, glowing core) into an RGBA buffer and encodes a valid PNG with the
+// image libraries, no binary assets. Draws the Heimdall eye and Bifrost bridge
+// inside the brand shield and encodes a valid PNG with the
 // built-in zlib. Keeps the repo free of committed binaries and guarantees the
 // icons match the dashboard's logo palette.
 
@@ -106,11 +106,19 @@ function drawIcon(size) {
       } else {
         // navy face, vertical gradient
         col = mix(NAVY_TOP, NAVY_BOT, v);
-        // glowing core
-        const dx = u - cx, dy = v - cy;
-        const d = Math.sqrt(dx * dx + dy * dy);
-        const glow = Math.max(0, 1 - d / 0.18);
-        if (glow > 0) col = mix(col, CYAN_LIGHT, glow * 0.95);
+        // Heimdall's watchful eye.
+        const eyeDx = (u - 0.5) / 0.23;
+        const eyeDy = (v - 0.43) / 0.12;
+        const inEye = eyeDx * eyeDx + eyeDy * eyeDy <= 1;
+        const pupil = Math.hypot(u - 0.5, v - 0.43) <= 0.065;
+        if (inEye) col = [203, 213, 225];
+        if (pupil) col = CYAN_LIGHT;
+
+        // Bifrost: a cyan path rising toward the eye.
+        const bridgeCenter = 0.5;
+        const bridgeHalfWidth = 0.035 + Math.max(0, v - 0.56) * 0.23;
+        const onBridge = v >= 0.55 && v <= 0.83 && Math.abs(u - bridgeCenter) <= bridgeHalfWidth;
+        if (onBridge) col = mix(CYAN, CYAN_LIGHT, Math.max(0, 1 - v));
       }
       rgba[i] = Math.round(col[0]);
       rgba[i + 1] = Math.round(col[1]);
