@@ -1,42 +1,24 @@
-# HackRU 2026 — AI Application Security Platform
+# Heimdall — Scan → See proof → Fix → Verify
 
-Heimdall is a GitHub-native security control plane for AI agents and MCP servers. It scans public repositories, maps agents and tools, traces trust-boundary crossings, and turns high-confidence findings into actionable fixes.
+Heimdall checks **public GitHub repositories** for potential security mistakes. Paste a repository URL and get filename/line evidence, redacted snippets, plain-language guidance, known OSV advisories when available, and a basic before/after comparison.
 
-The product deliberately separates four evidence states: observed source evidence, inferred control gaps, simulated walkthroughs, and verified reruns. A scan is a prioritization aid, not proof that an application is safe.
+## Run
 
-## What is included
+Serve the repository root using `npx serve .` and open `/web/`. The simple experience is `web/index.html`. The original multi-feature prototype is preserved at `web/console.html`. The Chrome extension remains in `extension/` but is not part of the main demo flow.
 
-- A polished browser-based security console in `web/`
-- Real public-repository source inspection and rule-based findings
-- Dependency parsing with OSV vulnerability lookup
-- Secret redaction and entropy-based detection
-- Evidence-backed attack paths, scan history, and change diffs
-- JSON, Markdown, and SARIF report exports
-- Coverage limits and evidence confidence are surfaced in the console so teams can distinguish facts from heuristics
-- A Chrome extension in `extension/` for GitHub overlays, prompt protection, page scanning, and a side-panel security copilot
+## What works without configuration
 
-## Run the web demo
+- Read-only public GitHub API repository scan (up to 35 selected files)
+- Pattern-based detection of credential candidates, dynamic code execution, raw HTML sinks, and command execution surfaces
+- OSV advisory lookup for pinned npm dependency versions, if the OSV endpoint is reachable
+- Real file paths, line numbers, GitHub code links, and **redacted** evidence
+- Local scan history and comparison of finding fingerprints across rescans
+- Rules-based fixes shown immediately
 
-The web demo has no build step. Serve the repository root with any static server, then open `web/index.html`.
+## Optional Gemini integration
 
-```bash
-npx serve .
-```
+Deploy as a Vercel project with the repository root as project root and set the `GEMINI_API_KEY` environment variable on the server. `/api/explain` is a server-side endpoint that calls Gemini 2.5 Flash; the browser does **not** contain your Gemini API key. The Explain with Gemini button shows an honest unavailable message on static-only GitHub Pages deployments.
 
-## Build the Chrome extension
+## Known limits
 
-```bash
-cd extension
-npm install
-npm run build
-```
-
-Load `extension/dist` as an unpacked extension from `chrome://extensions` after enabling Developer mode.
-
-## Safety
-
-Only scan repositories and applications you own or have explicit authorization to test. Demonstrations are designed to explain risk without exposing retrieved secrets.
-
-## Current scope
-
-The browser demo analyzes public repositories only. It is intentionally limited by GitHub API availability, source-file selection, browser memory, and static heuristics. It does not provide runtime verification, private-repository support, or a server-side audit trail yet. For production use, treat findings as reviewable evidence and validate controls in your own CI and runtime environment.
+This is static analysis, not exploitation or security certification. The scanner reads a capped subset of public files, uses heuristics that may produce false positives, does not verify runtime exploitability, and does not currently resolve lockfiles to exact installed versions. Secret-like values are redacted before display or Gemini requests. Avoid storing actual exposed credentials in test repositories; use fictional fixtures. Re-scan comparisons detect warnings disappearing, **not proof** that a code change fully resolves a vulnerability.
