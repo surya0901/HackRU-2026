@@ -2,7 +2,7 @@ name: Deploy HackRU demo to GitHub Pages
 
 on:
   push:
-    branches: ["draft-1"]
+    branches: ["main"]
     paths:
       - "web/**"
       - ".github/workflows/pages.yml"
