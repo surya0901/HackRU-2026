@@ -3,12 +3,12 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<meta name="description" content="Heimdall is the GitHub-native security control plane for AI agents and MCP servers. Map risky capabilities, block dangerous pull requests, and verify least-privilege fixes.">
+<meta name="description" content="Heimdall checks a public website or GitHub project, explains possible security problems in plain language, and shows what to fix first.">
 <meta name="theme-color" content="#ffffff">
 <meta property="og:type" content="website">
-<meta property="og:title" content="Heimdall — GitHub-native security for AI agents">
-<meta property="og:description" content="Map agent capabilities, explain attack paths, and verify least-privilege fixes before they ship.">
-<title>Heimdall — GitHub-native security for AI agents</title>
+<meta property="og:title" content="Heimdall — Understand your project's security">
+<meta property="og:description" content="Check a public project and understand what needs attention without security jargon.">
+<title>Heimdall — Understand your project's security</title>
 <link rel="icon" href="heimdall-logo.svg" type="image/svg+xml">
 <link rel="stylesheet" href="styles.css">
 </head>
@@ -35,17 +35,17 @@
 </div>
 <div class="actions">
 <button id="launchConsole" class="signin" type="button">Open console</button>
-<button class="green demo" type="button">Try live demo →</button>
+<button class="green demo" type="button">Try an example</button>
 <button id="navToggle" class="nav-toggle" type="button" aria-label="Open navigation" aria-expanded="false">☰</button>
 </div>
 </nav>
 <main id="main">
 <section class="hero wrap" id="top">
-<div class="pill"><span aria-hidden="true">✦</span> HackRU 2026 · Working beta</div>
-<h1>Ship AI agents with<br>
-<em>evidence you can trust.</em>
+<p class="hero-label">A simpler security check</p>
+<h1>Understand what could make<br>
+<em>your project unsafe.</em>
 </h1>
-<p class="lede">Heimdall maps agents, MCP servers, tools, secrets, and trust boundaries in your GitHub code. Get a prioritized attack path, a concrete fix, and a verification step before risky capabilities reach production.</p>
+<p class="lede">Paste a public GitHub link. Heimdall checks the files and packages, explains possible problems in everyday language, and shows you what to fix first.</p>
 <form id="scan" novalidate>
 <label class="sr-only" for="repo">Public GitHub repository URL</label>
 <input id="repo" type="url" inputmode="url" autocomplete="url" spellcheck="false" placeholder="https://github.com/username/repo" aria-describedby="repoHelp repoError">
@@ -56,43 +56,24 @@
 </p>
 <div class="proof" aria-label="What Heimdall produces">
 <article>
-<i aria-hidden="true">01</i>
 <span>
-<small>CHECK</small>
-<b>public files and packages</b>
+<small>Check</small>
+<b>We review public files and packages</b>
 </span>
 </article>
 <article>
-<i aria-hidden="true">02</i>
 <span>
-<small>EXPLAIN</small>
-<b>what needs attention</b>
+<small>Understand</small>
+<b>We explain each problem simply</b>
 </span>
 </article>
 <article>
-<i aria-hidden="true">03</i>
 <span>
-<small>VERIFY</small>
-<b>the problem is gone</b>
+<small>Improve</small>
+<b>You fix it and check again</b>
 </span>
 </article>
 </div>
-<section class="market-wedge" aria-labelledby="wedge-title">
-<div class="wedge-copy">
-<small>GITHUB-NATIVE CONTROL PLANE</small>
-<h2 id="wedge-title">Find the risky capability before it becomes an incident.</h2>
-<p>Heimdall turns a pull request into a security decision. It traces the path from untrusted input to tools, data, secrets, and external actions, then gives engineering a fix they can verify.</p>
-</div>
-<div class="wedge-grid">
-<article><b>01</b><strong>Discover</strong><span>Inventory agents, MCP servers, tools, and sensitive data paths.</span></article>
-<article><b>02</b><strong>Explain</strong><span>Separate observed evidence from inferred or simulated risk.</span></article>
-<article><b>03</b><strong>Block</strong><span>Turn high-confidence paths into CI and pull-request checks.</span></article>
-<article><b>04</b><strong>Verify</strong><span>Confirm that a least-privilege change actually breaks the path.</span></article>
-</div>
-<div class="evidence-legend" aria-label="Evidence confidence legend">
-<span><i class="observed"></i>Observed in source</span><span><i class="inferred"></i>Inferred control gap</span><span><i class="simulated"></i>Simulated walkthrough</span><span><i class="verified"></i>Verified by rerun</span>
-</div>
-</section>
 <div class="glass advanced-demo" id="demo" aria-label="Interactive Heimdall product preview">
 <div class="preview-label">ILLUSTRATIVE PRODUCT PREVIEW</div>
 <div class="stage">
@@ -322,7 +303,7 @@
 <section class="wrap block" id="journey">
 <header class="intro">
 <span>
-<small>HOW HEIMDALL HELPS</small>
+<small>How Heimdall helps</small>
 <h2>Security you can actually understand.</h2>
 </span>
 <p>Paste a public website or GitHub link. Heimdall checks it, explains what it found in everyday language, and helps you fix the most important problem first.</p>
@@ -356,7 +337,7 @@
 </section>
 <section class="wrap block" id="fixes">
 <header class="center">
-<small>WHAT HEIMDALL CHECKS</small>
+<small>What Heimdall checks</small>
 <h2>Six useful checks. No security degree required.</h2>
 <p>Each check produces a plain-language explanation and shows the evidence behind it. Technical details are available when a developer needs them.</p>
 </header>
@@ -383,8 +364,8 @@
 </article>
 <article>
 <i>AI</i>
-<h3>AI tools and access</h3>
-<p>Shows when an AI feature may reach files, websites, commands, or other tools that deserve extra review.</p>
+<h3>Connected tools and access</h3>
+<p>Shows when an automated feature may reach files, websites, commands, or other tools that deserve extra review.</p>
 </article>
 <article>
 <i>✓</i>
@@ -395,8 +376,8 @@
 </section>
 <section class="wrap block extension-showcase" id="extension">
 <div class="extension-copy">
-<small>CHROME COMPANION</small>
-<h2>The agent stays beside your work.</h2>
+<small>Browser companion</small>
+<h2>Keep the check close while you work.</h2>
 <p>Open Heimdall from the browser toolbar on a GitHub pull request. The companion prototype explains the highest-priority path, keeps evidence in context, and hands the full investigation back to the console.</p>
 <ul>
 <li><span>01</span> Detect the repository and pull request</li>
@@ -433,18 +414,18 @@
 <img src="heimdall-logo.svg" alt="">
 <b>Heimdall</b>
 </a>
-<span>AI-native security for modern builders.</span>
+<span>Clear security guidance for every builder.</span>
 <span>© 2026 Heimdall</span>
 </div>
 </footer>
-<button class="agent-launch" id="agentButton" type="button" aria-label="Open Heimdall console"><img src="heimdall-logo.svg" alt=""><span>Ask Heimdall</span></button>
+<button class="agent-launch" id="agentButton" type="button" aria-label="Open Heimdall console"><img src="heimdall-logo.svg" alt=""><span>Open Heimdall</span></button>
 <div class="modal" id="modal" role="dialog" aria-modal="true" aria-labelledby="mt" aria-describedby="mp" aria-hidden="true">
 <div tabindex="-1">
 <button id="close" type="button" aria-label="Cancel scan">×</button>
 <img src="heimdall-logo.svg" alt="">
-<small>HEIMDALL SECURITY COPILOT</small>
+<small>Project check</small>
 <h2 id="mt">Mapping your repository</h2>
-<p id="mp" role="status" aria-live="polite">Detecting agents, MCP servers, tools, and reachable secrets…</p>
+<p id="mp" role="status" aria-live="polite">Reviewing public files and packages…</p>
 <i>
 <span id="bar">
 </span>

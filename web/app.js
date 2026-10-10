@@ -522,16 +522,21 @@ function plainFinding(finding) {
 }
 
 function summaryFindingRows(scan) {
-  return scan.findings.map((finding, index) => {
+  const groups = [];
+  scan.findings.forEach((finding, index) => {
     const plain = plainFinding(finding);
+    const existing = groups.find(group => group.plain.title === plain.title);
+    if (existing) existing.items.push(finding);
+    else groups.push({ finding, index, plain, items: [finding] });
+  });
+  return groups.map(({ finding, index, plain, items }) => {
     const urgency = finding.sev === 'critical' ? 'Fix now' : finding.sev === 'high' ? 'Fix soon' : finding.sev === 'medium' ? 'Improve' : 'Review';
     return `<article class="summary-finding">
-      <div class="summary-rank" aria-hidden="true">${String(index + 1).padStart(2, '0')}</div>
       <div class="summary-finding-copy">
-        <div class="summary-finding-heading"><h3>${esc(plain.title)}</h3><span class="urgency ${esc(finding.sev)}">${urgency}</span></div>
+        <div class="summary-finding-heading"><h3>${esc(plain.title)}</h3>${items.length > 1 ? `<span class="occurrence">Found in ${items.length} places</span>` : ''}<span class="urgency ${esc(finding.sev)}">${urgency}</span></div>
         <p>${esc(plain.meaning)}</p>
-        <div class="summary-next"><span aria-hidden="true">→</span><strong>${esc(plain.action)}</strong></div>
-        <details><summary>See why Heimdall flagged this</summary><p>${esc(finding.detail)}</p><div class="finding-evidence"><span>${esc(finding.evidence)}${finding.line ? `:${finding.line}` : ''}</span><span>${esc(finding.mapping)}</span><span>${esc(finding.kind)}</span></div></details>
+        <div class="summary-next"><strong>What to do:</strong><span>${esc(plain.action)}</span></div>
+        <details><summary>See why Heimdall flagged this</summary><p>${esc(finding.detail)}</p><div class="finding-evidence">${items.slice(0, 6).map(item => `<span>${esc(item.evidence)}${item.line ? `:${item.line}` : ''}</span>`).join('')}<span>${esc(finding.mapping)}</span></div></details>
       </div>
       <button type="button" data-fix="${index}" aria-label="Open fix for ${esc(plain.title)}">Open fix</button>
     </article>`;
@@ -609,11 +614,12 @@ function consoleMarkup(scan) {
   const date = new Date(scan.createdAt).toLocaleString([], { dateStyle: 'medium', timeStyle: 'short' });
   const topFinding = scan.findings[0];
   const topPlain = plainFinding(topFinding);
+  const summaryCount = new Set(scan.findings.map(finding => plainFinding(finding).title)).size;
   const improvement = Math.min(100, scan.score + scan.findings.reduce((total, finding) => total + finding.points, 0));
   return `
     <div class="console-head">
       <div><button id="backHome" type="button">← Site</button><span class="console-brand"><img src="heimdall-logo.svg" alt=""> Heimdall Console</span></div>
-      <div><span class="live-data">● Live source + OSV</span><button id="rescanRepo" type="button">Rescan</button><button id="exportReport" type="button">Export</button></div>
+      <div><span class="source-note">Public source and package data</span><button id="rescanRepo" type="button">Scan again</button><button id="exportReport" type="button">Export</button></div>
     </div>
     <div class="console-shell">
       <aside>
@@ -629,10 +635,10 @@ function consoleMarkup(scan) {
       </aside>
       <main class="console-main">
         <section id="panel-overview" role="tabpanel" aria-labelledby="tab-overview" data-panel="overview">
-          <header class="summary-hero"><div><div class="summary-eyebrow"><span class="status-dot"></span>${esc(scan.meta.full_name)} · Scan complete</div><h2>${scan.findings.length} ${scan.findings.length === 1 ? 'thing needs' : 'things need'} your attention</h2><p>Nothing here means you were hacked. These are practical improvements that can make your project safer.</p><div class="console-provenance"><span>Branch ${esc(scan.branch)}</span><span>Commit ${esc(scan.commit.slice(0, 7))}</span><span>${esc(date)}</span></div></div><div class="summary-status" style="--score:${scan.score}%" aria-label="Readiness score ${scan.score} out of 100"><div class="summary-score"><strong>${scan.score}</strong><em>/100</em></div><span>Readiness score</span><small>A guide based on the checks completed</small></div></header>
-          <section class="summary-start"><div><small>START WITH THIS</small><h3>${esc(topPlain.title)}</h3><p>${esc(topPlain.meaning)}</p></div><button type="button" data-fix="0">Show me how</button></section>
+          <header class="summary-hero"><div><div class="summary-eyebrow">${esc(scan.meta.full_name)}</div><h2>${summaryCount} ${summaryCount === 1 ? 'problem needs' : 'problems need'} your attention</h2><p>Nothing here means you were hacked. These are practical improvements that can make your project safer.</p><div class="console-provenance"><span>Branch ${esc(scan.branch)}</span><span>Commit ${esc(scan.commit.slice(0, 7))}</span><span>Scanned ${esc(date)}</span></div></div><div class="summary-status" aria-label="Readiness score ${scan.score} out of 100"><div class="summary-score"><strong>${scan.score}</strong><em>/100</em></div><span>Readiness score</span><small>Based on the checks completed</small></div></header>
+          <section class="summary-start"><div><small>First, fix this</small><h3>${esc(topPlain.title)}</h3><p>${esc(topPlain.meaning)}</p></div><button type="button" data-fix="0">Show me how</button></section>
           <div class="summary-strip"><span><b>${scan.sourceStats.read}</b> public files checked</span><span><b>${scan.dependencies.length}</b> packages checked</span><span><b>${scan.osv.vulnerabilities.length}</b> known package ${scan.osv.vulnerabilities.length === 1 ? 'problem' : 'problems'}</span><span><b>${scan.diff.fixed}</b> fixed since last scan</span></div>
-          <div class="summary-section-heading"><div><small>YOUR RESULTS</small><h2>What to know, in plain English</h2></div><p>Ordered from most important to least important.</p></div>
+          <div class="summary-section-heading"><div><small>Your results</small><h2>Problems found</h2></div><p>Explained in plain English, with the most important first.</p></div>
           <div class="summary-findings">${summaryFindingRows(scan)}</div>
           <div class="summary-assurance"><span aria-hidden="true">i</span><div><strong>What this scan can—and cannot—tell you</strong><p>Heimdall reads selected public files and checks known package problems. It does not run your code, access private systems, or guarantee that the whole project is secure.</p></div></div>
         </section>
