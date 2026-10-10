@@ -1307,7 +1307,7 @@ function setupLandingInteractions() {
       const eased = 1 - Math.pow(1 - settling, 3);
       const finalX = available * (index / (journeyCards.length - 1));
       const x = centerX + (finalX - centerX) * eased;
-      const scale = .82 + arrival * .3 - settling * .12;
+      const scale = .94 + arrival * .1 - settling * .04;
       const y = 12 + eased * 82;
       card.style.opacity = String(arrival);
       card.style.transform = `translate3d(${x}px, ${y}px, 0) scale(${scale})`;
