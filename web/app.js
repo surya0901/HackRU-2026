@@ -1286,6 +1286,7 @@ function setupActionEscrow() {
 function setupLandingInteractions() {
   const journey = $('#journey');
   const journeyCards = $$('.scroll-story-cards article');
+  let journeyComplete = false;
   const updateJourneyStory = () => {
     if (!journey || !journeyCards.length) return;
     const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches || window.innerWidth <= 760;
@@ -1300,8 +1301,9 @@ function setupLandingInteractions() {
     const start = journey.offsetTop;
     const range = Math.max(1, journey.offsetHeight - window.innerHeight);
     const progress = Math.max(0, Math.min(0.999, (window.scrollY - start) / range));
+    if (progress >= .94) journeyComplete = true;
     journeyCards.forEach((card, index) => {
-      const phase = Math.max(0, Math.min(1, progress * journeyCards.length - index));
+      const phase = journeyComplete ? 1 : Math.max(0, Math.min(1, progress * journeyCards.length - index));
       const arrival = Math.min(1, phase / .28);
       const settling = Math.max(0, Math.min(1, (phase - .28) / .72));
       const eased = 1 - Math.pow(1 - settling, 3);
