@@ -366,6 +366,10 @@ function sensitiveOperation(index, node, indices, localNames = new Set()) {
   const method = parts.at(-1);
   const service = resolveService(index, node.callee, indices);
   const importInfo = index.imports.get(parts[0]);
+  if (service && !service.binding && parts.length > 1) {
+    const allowedReceivers = service.kind === 'filesystem' ? ['*', 'default', 'promises'] : service.kind === 'http' ? ['*', 'default', 'axios'] : ['*', 'default'];
+    if (!allowedReceivers.includes(importInfo?.imported)) return null;
+  }
   if (service?.kind === 'process') {
     const invoked = parts.length === 1 ? importInfo?.imported : method;
     if (parts.length <= 2 && ['exec', 'execSync', 'execFile', 'execFileSync', 'spawn', 'spawnSync', 'fork'].includes(invoked)) return { category: 'process-execution', label: 'Operating-system process execution', action: `${parts.join('.')} call`, relation: 'CAN_TRIGGER', service };
@@ -376,15 +380,22 @@ function sensitiveOperation(index, node, indices, localNames = new Set()) {
     if (['rm', 'rmSync', 'rmdir', 'rmdirSync', 'unlink', 'unlinkSync'].includes(invoked)) return { category: 'file-deletion', label: 'Filesystem deletion', action: `${parts.join('.')} call`, relation: 'WRITES', service };
     if (['writeFile', 'writeFileSync', 'appendFile', 'appendFileSync'].includes(invoked)) return { category: 'file-write', label: 'Filesystem write', action: `${parts.join('.')} call`, relation: 'WRITES', service };
   }
-  if (service?.kind === 'stripe' && parts.length === 3 && ['refunds', 'charges', 'paymentIntents', 'transfers', 'payouts'].includes(parts[1]) && ['create', 'update', 'cancel', 'confirm'].includes(method)) {
+  const financialMethods = { refunds: ['create', 'update', 'cancel'], charges: ['create', 'update', 'capture'], paymentIntents: ['create', 'update', 'cancel', 'confirm'], transfers: ['create', 'update'], payouts: ['create', 'update', 'cancel'] };
+  if (service?.kind === 'stripe' && parts.length === 3 && financialMethods[parts[1]]?.includes(method)) {
     return { category: 'financial-action', label: `Stripe ${parts[1]}.${method}`, action: `Stripe ${parts[1]}.${method}`, relation: 'CAN_TRIGGER', service };
   }
   if (service?.kind === 'database') {
-    if (parts.length > 3) return null;
-    if (['delete', 'deleteMany', 'deleteOne', 'drop', 'dropDatabase', 'dropCollection', 'update', 'updateMany', 'updateOne', 'insertOne', 'insertMany', 'create', 'upsert', 'replaceOne'].includes(method)) {
+    const databaseModule = service.imported.source;
+    const constructor = memberParts(service.binding.value.callee);
+    const constructorName = constructor.length === 1 ? service.imported.imported : constructor.at(-1);
+    const mutationMethods = databaseModule === '@prisma/client' && parts.length === 3 ? ['delete', 'deleteMany', 'update', 'updateMany', 'create', 'createMany', 'upsert']
+      : databaseModule === 'mongodb' && parts.length === 2 && constructorName === 'Collection' ? ['deleteOne', 'deleteMany', 'updateOne', 'updateMany', 'insertOne', 'insertMany', 'replaceOne', 'drop']
+        : databaseModule === 'mongodb' && parts.length === 2 && constructorName === 'Db' ? ['dropDatabase', 'dropCollection'] : [];
+    if (mutationMethods.includes(method)) {
       return { category: /delete|drop/.test(method) ? 'record-deletion' : 'record-write', label: `Database ${parts.slice(1).join('.')}`, action: `Database method ${parts.slice(1).join('.')}`, relation: 'WRITES', service };
     }
-    if (['query', 'execute', '$executeRawUnsafe', '$executeRaw'].includes(method)) {
+    const sqlMethod = parts.length === 2 && ((databaseModule === 'pg' && method === 'query') || (databaseModule === '@prisma/client' && ['$executeRawUnsafe', '$executeRaw'].includes(method)));
+    if (sqlMethod) {
       const sql = literal(node.arguments[0]);
       if (typeof sql === 'string' && /^\s*(?:DELETE|UPDATE|INSERT|DROP|TRUNCATE|ALTER)\b/i.test(sql)) return { category: /^(?:\s*)(?:DELETE|DROP|TRUNCATE)\b/i.test(sql) ? 'record-deletion' : 'record-write', label: 'Database mutation query', action: `Database ${method} with mutation SQL`, relation: 'WRITES', service };
     }

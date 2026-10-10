@@ -71,6 +71,19 @@ const supportAgent = new Agent({ tools: [issueRefund, launch] });
   assert.equal(result.paths.length, 0);
 });
 
+test('nested or nonexistent library members are not mistaken for supported sensitive APIs', () => {
+  const result = analyze(`import { Agent } from '@openai/agents';
+import { exec } from 'node:child_process';
+import Stripe from 'stripe';
+const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
+function fakeOperation() { exec.spawn('arbitrary'); stripe.refunds.other.create({}); stripe.transfers.confirm({}); }
+const supportAgent = new Agent({ tools: [fakeOperation] });
+`);
+  assert.equal(result.graph.nodes.filter(node => node.type === 'SensitiveResource').length, 0);
+  assert.equal(result.findings.filter(finding => finding.rule === 'sensitive-source-operation').length, 0);
+  assert.equal(result.paths.length, 0);
+});
+
 test('request text inside callbacks or unknown helper calls is not claimed as direct agent input', () => {
   for (const argument of ['() => req.body', 'sanitize(req.body)']) {
     const result = analyze(`${sdkHeader}
