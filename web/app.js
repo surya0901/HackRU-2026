@@ -467,6 +467,77 @@ function findingRows(scan) {
     </article>`).join('');
 }
 
+function plainFinding(finding) {
+  const key = `${finding.rule || ''} ${finding.id || ''} ${finding.title || ''}`.toLowerCase();
+  if (/security workflow|sec-003/.test(key)) return {
+    title: 'Security checks are not running automatically',
+    meaning: 'A risky change could be added without anyone being warned.',
+    action: 'Add an automatic security check to every code change.'
+  };
+  if (/osv|known vulnerability|dep-/.test(key)) return {
+    title: 'A software package needs an update',
+    meaning: 'This project uses a package with a publicly known security problem.',
+    action: `Update ${finding.title.match(/in ([^@\s]+)@/)?.[1] || 'the affected package'}, test the project, and scan again.`
+  };
+  if (/rate.?limit|ops-001/.test(key)) return {
+    title: 'The app may accept too many requests at once',
+    meaning: 'Someone could overwhelm the app or create an unexpectedly large bill.',
+    action: 'Set limits for requests and expensive AI actions.'
+  };
+  if (/security policy|sec-002/.test(key)) return {
+    title: 'People need a private way to report security problems',
+    meaning: 'A researcher may not know how to safely tell your team about a problem.',
+    action: 'Add a short security policy with a private contact method.'
+  };
+  if (/private key|credential|token|password|secret|sec-001/.test(key)) return {
+    title: 'Private information may be visible in the code',
+    meaning: 'A password or access key could let someone use a service as your team.',
+    action: 'Disable the old key, remove it from the code, and store its replacement safely.'
+  };
+  if (/shell|command execution/.test(key)) return {
+    title: 'Part of the app can run computer commands',
+    meaning: 'Unsafe input could potentially make the server perform an unintended action.',
+    action: 'Limit which commands are allowed and reject unexpected input.'
+  };
+  if (/html|xss/.test(key)) return {
+    title: 'Untrusted content may be shown as webpage code',
+    meaning: 'An attacker could potentially place unwanted content on the page.',
+    action: 'Treat input as text or clean it with a trusted sanitizer.'
+  };
+  if (/sql/.test(key)) return {
+    title: 'A database request may include unsafe input',
+    meaning: 'Someone could potentially change what the database command does.',
+    action: 'Use parameterized database queries and test the affected path.'
+  };
+  if (/ai runtime|agent/.test(key)) return {
+    title: 'The AI feature may have broad access',
+    meaning: 'An AI action could reach more tools or information than it needs.',
+    action: 'Limit its tools, permissions, time, and number of steps.'
+  };
+  return {
+    title: finding.title,
+    meaning: finding.detail,
+    action: finding.fix
+  };
+}
+
+function summaryFindingRows(scan) {
+  return scan.findings.map((finding, index) => {
+    const plain = plainFinding(finding);
+    const urgency = finding.sev === 'critical' ? 'Fix now' : finding.sev === 'high' ? 'Fix soon' : finding.sev === 'medium' ? 'Improve' : 'Review';
+    return `<article class="summary-finding">
+      <div class="summary-rank" aria-hidden="true">${String(index + 1).padStart(2, '0')}</div>
+      <div class="summary-finding-copy">
+        <div class="summary-finding-heading"><h3>${esc(plain.title)}</h3><span class="urgency ${esc(finding.sev)}">${urgency}</span></div>
+        <p>${esc(plain.meaning)}</p>
+        <div class="summary-next"><span aria-hidden="true">→</span><strong>${esc(plain.action)}</strong></div>
+        <details><summary>See why Heimdall flagged this</summary><p>${esc(finding.detail)}</p><div class="finding-evidence"><span>${esc(finding.evidence)}${finding.line ? `:${finding.line}` : ''}</span><span>${esc(finding.mapping)}</span><span>${esc(finding.kind)}</span></div></details>
+      </div>
+      <button type="button" data-fix="${index}" aria-label="Open fix for ${esc(plain.title)}">Open fix</button>
+    </article>`;
+  }).join('');
+}
+
 function permissionGraph(scan) {
   const nodes = [
     ['Repository', 'repo'],
@@ -537,6 +608,7 @@ function reportSarif(scan) {
 function consoleMarkup(scan) {
   const date = new Date(scan.createdAt).toLocaleString([], { dateStyle: 'medium', timeStyle: 'short' });
   const topFinding = scan.findings[0];
+  const topPlain = plainFinding(topFinding);
   const improvement = Math.min(100, scan.score + scan.findings.reduce((total, finding) => total + finding.points, 0));
   return `
     <div class="console-head">
@@ -557,11 +629,12 @@ function consoleMarkup(scan) {
       </aside>
       <main class="console-main">
         <section id="panel-overview" role="tabpanel" aria-labelledby="tab-overview" data-panel="overview">
-          <header class="workspace-title"><div><small>${esc(scan.meta.full_name)}</small><h2>Here is what we found</h2><p>${scan.findings.length ? 'Your project has a few things worth fixing. We put the most important one first.' : 'We did not find an important warning in the public files we checked.'}</p></div><div class="trust" style="--score:${scan.score}%"><strong>${scan.findings.length ? '!' : '✓'}</strong><span>${scan.findings.length ? 'Needs attention' : 'Looks clear'}</span></div></header>
-          <div class="console-provenance"><span>Branch ${esc(scan.branch)}</span><span>Commit ${esc(scan.commit.slice(0, 7))}</span><span>${esc(date)}</span><span>${esc(scan.scope)}</span></div>
-          <div class="priority-callout"><small>START HERE</small><h3>${esc(topFinding.title)}</h3><p>${esc(topFinding.detail)}</p><button type="button" data-fix="0">Show me how to fix it</button></div>
-          <div class="metrics"><article><small>FILES CHECKED</small><b>${scan.sourceStats.read}</b><span>Public files read safely</span></article><article><small>PACKAGES CHECKED</small><b>${scan.dependencies.length}</b><span>${scan.osv.vulnerabilities.length} known package problems</span></article><article><small>THINGS TO REVIEW</small><b>${scan.findings.length}</b><span>${scan.diff.added} new · ${scan.diff.fixed} fixed</span></article></div>
-          <div class="console-card"><header><h3>What this result means</h3><span>A scan helps you decide what to review; it is not a guarantee.</span></header><div class="plain-answer"><article><small>WHAT</small><h3>${esc(topFinding.title)}</h3><p>Heimdall found evidence in a public project file.</p></article><article><small>WHY</small><h3>It may put your project at risk</h3><p>We explain the possible outcome without pretending an attack happened.</p></article><article><small>NEXT</small><h3>Fix it, then scan again</h3><p>The next scan will show whether this warning disappeared.</p></article></div><p class="scope-note">Heimdall reads selected public files and checks known package problems. It does not run your code, access private systems, or prove that an attack occurred.</p></div>
+          <header class="summary-hero"><div><div class="summary-eyebrow"><span class="status-dot"></span>${esc(scan.meta.full_name)} · Scan complete</div><h2>${scan.findings.length} ${scan.findings.length === 1 ? 'thing needs' : 'things need'} your attention</h2><p>Nothing here means you were hacked. These are practical improvements that can make your project safer.</p><div class="console-provenance"><span>Branch ${esc(scan.branch)}</span><span>Commit ${esc(scan.commit.slice(0, 7))}</span><span>${esc(date)}</span></div></div><div class="summary-status" style="--score:${scan.score}%" aria-label="Readiness score ${scan.score} out of 100"><div class="summary-score"><strong>${scan.score}</strong><em>/100</em></div><span>Readiness score</span><small>A guide based on the checks completed</small></div></header>
+          <section class="summary-start"><div><small>START WITH THIS</small><h3>${esc(topPlain.title)}</h3><p>${esc(topPlain.meaning)}</p></div><button type="button" data-fix="0">Show me how</button></section>
+          <div class="summary-strip"><span><b>${scan.sourceStats.read}</b> public files checked</span><span><b>${scan.dependencies.length}</b> packages checked</span><span><b>${scan.osv.vulnerabilities.length}</b> known package ${scan.osv.vulnerabilities.length === 1 ? 'problem' : 'problems'}</span><span><b>${scan.diff.fixed}</b> fixed since last scan</span></div>
+          <div class="summary-section-heading"><div><small>YOUR RESULTS</small><h2>What to know, in plain English</h2></div><p>Ordered from most important to least important.</p></div>
+          <div class="summary-findings">${summaryFindingRows(scan)}</div>
+          <div class="summary-assurance"><span aria-hidden="true">i</span><div><strong>What this scan can—and cannot—tell you</strong><p>Heimdall reads selected public files and checks known package problems. It does not run your code, access private systems, or guarantee that the whole project is secure.</p></div></div>
         </section>
         <section id="panel-findings" role="tabpanel" aria-labelledby="tab-findings" data-panel="findings" hidden>
           <header class="workspace-title"><div><small>WHAT NEEDS ATTENTION</small><h2>Problems, explained simply</h2><p>Start at the top. Each card tells you what we found, where we found it, and what to do next.</p></div></header>
