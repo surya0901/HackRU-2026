@@ -203,7 +203,11 @@ button{min-height:40px}
 @media(max-width:700px){.priority-callout{padding:20px}.priority-callout button{position:static;transform:none;margin-top:15px}.console-card>header{align-items:flex-start;gap:10px}.console-card>header span{text-align:right}}
 .extension-panel{transition:background .25s,box-shadow .25s}.extension-panel.highlight{background:#eef6ff;box-shadow:inset 0 0 0 2px #7bb4e8}
 .console-tabs{display:flex;flex-direction:column;gap:5px}.console-tabs button{width:100%}
+.cards.four{grid-template-columns:repeat(4,1fr)}.simple-features article{min-height:250px}.simple-features article p{margin-bottom:0}.plain-answer{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin:18px 0}.plain-answer article{padding:18px;border:1px solid #e5e5e7;border-radius:16px;background:#fff}.plain-answer small{color:#0066cc;font-weight:800}.plain-answer h3{margin:8px 0;font-size:17px}.plain-answer p{margin:0;color:#626267;font-size:13px;line-height:1.55}.fix-checklist{display:grid;gap:9px;margin:18px 0;padding:0;list-style:none}.fix-checklist li{padding:13px 15px;border:1px solid #e5e5e7;border-radius:12px;background:#fff;font-size:13px}.fix-checklist li::before{content:"□";margin-right:10px;color:#0071e3;font-weight:800}
+.advanced-demo{display:none!important}
 @media(max-width:760px){.console-tabs{flex-direction:row}.console-tabs button{width:auto}}
+@media(max-width:1000px){.cards.four{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:720px){.cards.four,.plain-answer{grid-template-columns:1fr}}
 
 /* Product console: source evidence, attack paths, dependency intelligence, and scan history */
 .source-snippet{margin:11px 0 0;padding:11px 13px!important;border:1px solid #e5e5e7;border-radius:9px!important;background:#f7f7f8!important;color:#343439;font:11px/1.55 ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,monospace;overflow:auto;white-space:pre-wrap;word-break:break-word}

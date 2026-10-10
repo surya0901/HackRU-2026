@@ -3,12 +3,12 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<meta name="description" content="Heimdall maps AI agents, tools, permissions, and secrets into explainable attack paths and verifiable fix plans.">
+<meta name="description" content="Heimdall checks public projects for possible security problems and explains what to fix in plain language.">
 <meta name="theme-color" content="#ffffff">
 <meta property="og:type" content="website">
-<meta property="og:title" content="Heimdall — Prove your AI agents are safe">
-<meta property="og:description" content="Replay AI attack paths, simulate containment, and verify the fix before production.">
-<title>Heimdall — Prove your AI agents are safe</title>
+<meta property="og:title" content="Heimdall — Understand your project's security">
+<meta property="og:description" content="Check a public project, understand possible problems, and see what to fix first.">
+<title>Heimdall — Understand your project's security</title>
 <link rel="icon" href="heimdall-logo.svg" type="image/svg+xml">
 <link rel="stylesheet" href="styles.css">
 </head>
@@ -29,11 +29,8 @@
 <b>Heimdall</b>
 </a>
 <div class="links">
-<a href="#journey">Journey</a>
-<a href="#fixes">What we fix</a>
-<a href="#demo">Live demo</a>
-<a href="#action-escrow">Action Escrow</a>
-<a href="#twin-showcase">Security Twin</a>
+<a href="#journey">How it works</a>
+<a href="#fixes">What we check</a>
 <a href="#extension">Extension</a>
 </div>
 <div class="actions">
@@ -45,10 +42,10 @@
 <main id="main">
 <section class="hero wrap" id="top">
 <div class="pill"><span aria-hidden="true">✦</span> HackRU 2026 · Working beta</div>
-<h1>Secure your AI agents<br>
-<em>before they ship risk.</em>
+<h1>Know if your project is safe<br>
+<em>and what to fix first.</em>
 </h1>
-<p class="lede">Map every path from prompt to tool to secret. Heimdall turns a public GitHub repository into a prioritized security story and a fix plan your team can act on.</p>
+<p class="lede">Paste a public GitHub link. Heimdall checks the code, explains possible security problems in plain language, and gives you clear next steps.</p>
 <form id="scan" novalidate>
 <label class="sr-only" for="repo">Public GitHub repository URL</label>
 <input id="repo" type="url" inputmode="url" autocomplete="url" spellcheck="false" placeholder="https://github.com/username/repo" aria-describedby="repoHelp repoError">
@@ -61,26 +58,26 @@
 <article>
 <i aria-hidden="true">01</i>
 <span>
-<small>MAP</small>
-<b>agents + MCP tools</b>
+<small>CHECK</small>
+<b>public files and packages</b>
 </span>
 </article>
 <article>
 <i aria-hidden="true">02</i>
 <span>
-<small>PROVE</small>
-<b>attack-path evidence</b>
+<small>EXPLAIN</small>
+<b>what needs attention</b>
 </span>
 </article>
 <article>
 <i aria-hidden="true">03</i>
 <span>
 <small>VERIFY</small>
-<b>least-privilege fix</b>
+<b>the problem is gone</b>
 </span>
 </article>
 </div>
-<div class="glass" id="demo" aria-label="Interactive Heimdall product preview">
+<div class="glass advanced-demo" id="demo" aria-label="Interactive Heimdall product preview">
 <div class="preview-label">ILLUSTRATIVE PRODUCT PREVIEW</div>
 <div class="stage">
 <div class="stack">
@@ -167,7 +164,7 @@
 </div>
 </div>
 </section>
-<section class="stats wrap">
+<section class="stats wrap advanced-demo">
 <h4>EVIDENCE-LED SECURITY ANALYSIS</h4>
 <div>
 <article>
@@ -188,7 +185,7 @@
 </article>
 </div>
 </section>
-<section class="wrap block twin-showcase" id="twin-showcase">
+<section class="wrap block twin-showcase advanced-demo" id="twin-showcase">
 <header class="intro">
 <span>
 <small>SIGNATURE EXPERIENCE</small>
@@ -242,7 +239,7 @@
 </div>
 </div>
 </section>
-<section class="wrap block action-escrow-section" id="action-escrow">
+<section class="wrap block action-escrow-section advanced-demo" id="action-escrow">
 <header class="intro">
 <span>
 <small>LIVE HACKATHON FEATURE · TRANSACTIONAL AI SAFETY</small>
@@ -309,71 +306,74 @@
 <section class="wrap block" id="journey">
 <header class="intro">
 <span>
-<small>PRODUCT JOURNEY</small>
-<h2>From a GitHub URL to a fix plan.</h2>
+<small>HOW HEIMDALL HELPS</small>
+<h2>Security you can actually understand.</h2>
 </span>
-<p>Heimdall turns raw application code into an understandable security story: what exists, what can go wrong, and what to change first.</p>
+<p>Paste a public website or GitHub link. Heimdall checks it, explains what it found in everyday language, and helps you fix the most important problem first.</p>
 </header>
-<div class="cards three">
+<div class="cards four simple-features">
 <article>
 <i>⌕</i>
-<small>1. SCAN THE REPO</small>
-<h3>Point Heimdall at GitHub</h3>
-<p>Paste a repository URL. Heimdall pulls real source, detects AI agents and MCP servers, then builds a security map without asking for credentials.</p>
-<code>repo → agents → tools</code>
+<small>1. CHECK</small>
+<h3>Scan your project</h3>
+<p>Give Heimdall a public GitHub link. It safely reads the public code without running or changing it.</p>
 </article>
 <article>
-<i>△</i>
-<small>2. SEE WHAT CAN GO WRONG</small>
-<h3>Turn code into attack paths</h3>
-<p>The dashboard shows critical risks, tool permissions, secret reachability, cost exposure, blast radius, and attacker kill chains in one place.</p>
-<code>prompt → tool → secret</code>
+<i>!</i>
+<small>2. UNDERSTAND</small>
+<h3>See what needs attention</h3>
+<p>Get a short, prioritized list instead of a wall of warnings. Heimdall tells you which problem matters most.</p>
 </article>
 <article>
 <i>⌁</i>
-<small>3. FIX WHAT MATTERS</small>
-<h3>Ship least-privilege fixes</h3>
-<p>Heimdall explains the root cause, recommends code and config changes, and gives your team remediation notes that map directly to the finding.</p>
-<code>finding → patch → trust</code>
+<small>3. FIX</small>
+<h3>Follow clear next steps</h3>
+<p>Every problem explains what was found, why it matters, where it lives, and what to do next.</p>
+</article>
+<article>
+<i>✓</i>
+<small>4. CHECK AGAIN</small>
+<h3>Confirm the problem is gone</h3>
+<p>Scan again after making a change. Heimdall shows what was fixed, what is new, and what still needs work.</p>
 </article>
 </div>
 </section>
 <section class="wrap block" id="fixes">
 <header class="center">
-<small>WHAT HEIMDALL FIXES</small>
-<h2>Security for the new AI attack surface.</h2>
-<p>Heimdall combines source rules, secret detection, dependency intelligence, and AI-specific controls to find the risks that appear when prompts, models, tools, data, and infrastructure start acting together.</p>
+<small>WHAT HEIMDALL CHECKS</small>
+<h2>Six useful checks. No security degree required.</h2>
+<p>Each check produces a plain-language explanation and shows the evidence behind it. Technical details are available when a developer needs them.</p>
 </header>
 <div class="cards fixes">
 <article>
-<i>◌</i>
-<h3>Prompt Injection</h3>
-<p>Guard prompts, sanitize retrieved context, and restrict tool execution.</p>
+<i>•••</i>
+<h3>Exposed passwords and keys</h3>
+<p>Looks for private information accidentally stored in public code and hides the sensitive value in the report.</p>
 </article>
 <article>
-<i>⌁</i>
-<h3>Secret Exfiltration</h3>
-<p>Remove paths from agents to env vars, logs, files, and cloud tokens.</p>
-</article>
-<article>
-<i>⌘</i>
-<h3>Tool Permissions</h3>
-<p>Apply least privilege across shell, filesystem, network, database, and cloud tools.</p>
+<i>⚠</i>
+<h3>Risky code</h3>
+<p>Finds code that may run unexpected commands or use untrusted information in an unsafe way.</p>
 </article>
 <article>
 <i>▦</i>
-<h3>MCP Exposure</h3>
-<p>Audit MCP servers, commands, transports, tool counts, and unsafe external reach.</p>
-</article>
-<article>
-<i>$</i>
-<h3>Cost Abuse</h3>
-<p>Add rate limits, loop controls, retry caps, and budget-aware execution paths.</p>
+<h3>Outdated packages</h3>
+<p>Checks the project’s installed packages against a public list of known security problems.</p>
 </article>
 <article>
 <i>◎</i>
-<h3>AI Agent Blast Radius</h3>
-<p>Show what each agent can touch, what it can leak, and how to shrink the radius.</p>
+<h3>Website basics</h3>
+<p>Checks visible website details such as secure connections, password forms, links, and third-party scripts.</p>
+</article>
+<article>
+<i>AI</i>
+<h3>AI tools and access</h3>
+<p>Shows when an AI feature may reach files, websites, commands, or other tools that deserve extra review.</p>
+</article>
+<article>
+<i>✓</i>
+<h3>Before and after</h3>
+<p>Compares scans so you can see whether a problem was fixed instead of simply trusting a suggestion.</p>
 </article>
 </div>
 </section>
@@ -406,8 +406,8 @@
 </section>
 <section class="wrap final" id="dashboard">
 <img src="heimdall-logo.svg" alt="">
-<h2>Ship fast. Know what you’re shipping.</h2>
-<p>Paste a GitHub repository and let Heimdall map the agents, tools, secrets, attack paths, and fixes.</p>
+<h2>Know what needs attention before you publish.</h2>
+<p>Paste a public GitHub repository. Heimdall explains possible problems and gives you a clear place to start.</p>
 <button class="green demo">Scan the demo repository →</button>
 </section>
 </main>

@@ -535,7 +535,6 @@ function reportSarif(scan) {
 }
 
 function consoleMarkup(scan) {
-  const grade = scan.score >= 90 ? 'A' : scan.score >= 80 ? 'B' : scan.score >= 70 ? 'C' : scan.score >= 60 ? 'D' : 'F';
   const date = new Date(scan.createdAt).toLocaleString([], { dateStyle: 'medium', timeStyle: 'short' });
   const topFinding = scan.findings[0];
   const improvement = Math.min(100, scan.score + scan.findings.reduce((total, finding) => total + finding.points, 0));
@@ -549,7 +548,7 @@ function consoleMarkup(scan) {
         <p>WORKSPACE</p>
         <div class="console-tabs" role="tablist" aria-label="Console sections">
         ${[
-          ['overview', 'Overview'], ['findings', `Findings (${scan.findings.length})`], ['paths', 'Attack paths'], ['dependencies', `Dependencies (${scan.dependencies.length})`], ['replay', 'Flight recorder'], ['twin', 'Security Twin'], ['history', 'History'], ['copilot', 'Guide']
+          ['overview', 'Summary'], ['findings', `Problems (${scan.findings.length})`], ['fixes', 'Fixes'], ['history', 'Progress']
         ].map(([id, label], index) => `<button type="button" role="tab" aria-selected="${index === 0}" aria-controls="panel-${id}" id="tab-${id}" data-tab="${id}" class="${index ? '' : 'active'}">${label}</button>`).join('')}
         </div>
         <hr><small>DEVICE WORKSPACE</small>
@@ -558,15 +557,21 @@ function consoleMarkup(scan) {
       </aside>
       <main class="console-main">
         <section id="panel-overview" role="tabpanel" aria-labelledby="tab-overview" data-panel="overview">
-          <header class="workspace-title"><div><small>${esc(scan.meta.full_name)}</small><h2>What needs attention now</h2><p>${esc(scan.meta.description || 'Public repository security posture.')}</p></div><div class="trust" style="--score:${scan.score}%"><strong>${scan.score}</strong><span>/100 · ${grade}</span></div></header>
+          <header class="workspace-title"><div><small>${esc(scan.meta.full_name)}</small><h2>Here is what we found</h2><p>${scan.findings.length ? 'Your project has a few things worth fixing. We put the most important one first.' : 'We did not find an important warning in the public files we checked.'}</p></div><div class="trust" style="--score:${scan.score}%"><strong>${scan.findings.length ? '!' : '✓'}</strong><span>${scan.findings.length ? 'Needs attention' : 'Looks clear'}</span></div></header>
           <div class="console-provenance"><span>Branch ${esc(scan.branch)}</span><span>Commit ${esc(scan.commit.slice(0, 7))}</span><span>${esc(date)}</span><span>${esc(scan.scope)}</span></div>
-          <div class="priority-callout"><small>FIX FIRST · ${esc(topFinding.id)}</small><h3>${esc(topFinding.title)}</h3><p>${esc(topFinding.detail)}</p><button type="button" data-fix="0">Review the evidence and fix</button></div>
-          <div class="metrics"><article><small>SOURCE ANALYZED</small><b>${scan.sourceStats.read}</b><span>${Math.round(scan.sourceStats.bytes / 1024)} KB of relevant code</span></article><article><small>DEPENDENCIES CHECKED</small><b>${scan.dependencies.length}</b><span>${scan.osv.vulnerabilities.length} OSV advisory matches</span></article><article><small>PRIORITY FINDINGS</small><b>${scan.findings.length}</b><span>${scan.diff.added} new · ${scan.diff.fixed} fixed</span></article></div>
-          <div class="console-card"><header><h3>Capability path</h3><span>Derived from source evidence; impact remains inferred until runtime validation</span></header>${permissionGraph(scan)}<p class="scope-note">Posture indicator = 100 minus weighted findings. It helps prioritize review; it is not a certification or guarantee.</p></div>
+          <div class="priority-callout"><small>START HERE</small><h3>${esc(topFinding.title)}</h3><p>${esc(topFinding.detail)}</p><button type="button" data-fix="0">Show me how to fix it</button></div>
+          <div class="metrics"><article><small>FILES CHECKED</small><b>${scan.sourceStats.read}</b><span>Public files read safely</span></article><article><small>PACKAGES CHECKED</small><b>${scan.dependencies.length}</b><span>${scan.osv.vulnerabilities.length} known package problems</span></article><article><small>THINGS TO REVIEW</small><b>${scan.findings.length}</b><span>${scan.diff.added} new · ${scan.diff.fixed} fixed</span></article></div>
+          <div class="console-card"><header><h3>What this result means</h3><span>A scan helps you decide what to review; it is not a guarantee.</span></header><div class="plain-answer"><article><small>WHAT</small><h3>${esc(topFinding.title)}</h3><p>Heimdall found evidence in a public project file.</p></article><article><small>WHY</small><h3>It may put your project at risk</h3><p>We explain the possible outcome without pretending an attack happened.</p></article><article><small>NEXT</small><h3>Fix it, then scan again</h3><p>The next scan will show whether this warning disappeared.</p></article></div><p class="scope-note">Heimdall reads selected public files and checks known package problems. It does not run your code, access private systems, or prove that an attack occurred.</p></div>
         </section>
         <section id="panel-findings" role="tabpanel" aria-labelledby="tab-findings" data-panel="findings" hidden>
-          <header class="workspace-title"><div><small>PRIORITIZED</small><h2>Evidence before opinion</h2><p>Every signal shows its source, classification, mapping, and next action.</p></div></header>
+          <header class="workspace-title"><div><small>WHAT NEEDS ATTENTION</small><h2>Problems, explained simply</h2><p>Start at the top. Each card tells you what we found, where we found it, and what to do next.</p></div></header>
           <div class="finding-list">${findingRows(scan)}</div>
+        </section>
+        <section id="panel-fixes" role="tabpanel" aria-labelledby="tab-fixes" data-panel="fixes" hidden>
+          <header class="workspace-title"><div><small>YOUR NEXT STEPS</small><h2>Fix the most important problem first</h2><p>You do not need to solve everything at once. Complete these steps, then scan again.</p></div></header>
+          <div class="priority-callout"><small>RECOMMENDED FIRST FIX</small><h3>${esc(topFinding.title)}</h3><p>${esc(topFinding.fix)}</p><button type="button" data-fix="0">See the evidence and details</button></div>
+          <ul class="fix-checklist"><li>Find the file shown in the evidence</li><li>Make the recommended change</li><li>Replace any exposed password or key if needed</li><li>Run Heimdall again to confirm the warning is gone</li></ul>
+          <div class="console-card impact"><h3>Want the full plan?</h3><p>Download a checklist containing every problem, its location, and the recommended next step.</p><button id="applyAll" type="button">Download the fix plan</button></div>
         </section>
         <section id="panel-paths" role="tabpanel" aria-labelledby="tab-paths" data-panel="paths" hidden>
           <header class="workspace-title"><div><small>CAUSAL MODEL</small><h2>Attack paths from evidence to impact</h2><p>Observed source is separated from inferred exploit impact. Heimdall does not claim an exploit ran.</p></div></header>
@@ -588,10 +593,10 @@ function consoleMarkup(scan) {
         <section id="panel-twin" role="tabpanel" aria-labelledby="tab-twin" data-panel="twin" hidden>
           <header class="workspace-title"><div><small>COUNTERFACTUAL MODEL</small><h2>Preview controls before merging</h2><p>Review how this heuristic posture indicator could change. Values are calculated from the visible finding weights.</p></div></header>
           <div class="twin-grid"><article><small>CURRENT</small><strong>${scan.score}</strong><span>Posture indicator</span><div class="radius"><i style="width:${100 - scan.score}%"></i></div><p>${scan.findings.length} active signals</p></article><div class="twin-arrow">→</div><article class="after"><small>IF ALL VISIBLE SIGNALS ARE ADDRESSED</small><strong>${improvement}</strong><span>Modeled indicator</span><div class="radius"><i style="width:${100 - improvement}%"></i></div><p>Requires verification after changes</p></article></div>
-          <div class="console-card impact"><h3>What the model assumes</h3><p>Each visible finding’s weight is removed only when its proposed control is selected. Heimdall does not claim the code is fixed until a follow-up scan and test evidence confirm it.</p><button id="applyAll" type="button">Download the fix plan</button></div>
+          <div class="console-card impact"><h3>What the model assumes</h3><p>Each visible finding’s weight is removed only when its proposed control is selected. Heimdall does not claim the code is fixed until a follow-up scan and test evidence confirm it.</p></div>
         </section>
         <section id="panel-history" role="tabpanel" aria-labelledby="tab-history" data-panel="history" hidden>
-          <header class="workspace-title"><div><small>REGRESSION VIEW</small><h2>What changed since the last commit</h2><p>Heimdall fingerprints findings by rule, file, and line so rescans can separate new, fixed, and unchanged risk.</p></div></header>
+          <header class="workspace-title"><div><small>BEFORE AND AFTER</small><h2>Did the changes help?</h2><p>Compare this scan with the previous one to see what was fixed, what is new, and what still needs attention.</p></div></header>
           ${historyMarkup(scan)}
         </section>
         <section id="panel-copilot" role="tabpanel" aria-labelledby="tab-copilot" data-panel="copilot" hidden>
