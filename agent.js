@@ -5,7 +5,7 @@ import { issueRefund } from './tools.js';
 // No code in this example is executed by Heimdall.
 export const supportAgent = createAgent({
   model: 'anthropic:claude-sonnet-4-5',
-  tools: [issueRefund],
+  tools: [],
   systemPrompt: 'Assist customers with their support questions.'
 });
 
