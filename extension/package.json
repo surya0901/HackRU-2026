@@ -1,0 +1,31 @@
+{
+  "name": "sentinel-chrome",
+  "displayName": "Sentinel — AI Security Assistant",
+  "description": "GitHub Advanced Security for AI agents, in your browser. Prompt Shield, secret-leak prevention, GitHub trust overlay, agent/MCP discovery, and a Security Copilot — all wired to your real Sentinel dashboard.",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "icons": "node scripts/make-icons.mjs",
+    "build:js": "node esbuild.mjs",
+    "build:css": "tailwindcss -i ./src/styles/app.css -o ./dist/app.css --minify",
+    "build": "node scripts/make-icons.mjs && node esbuild.mjs && npm run build:css",
+    "watch": "node esbuild.mjs --watch",
+    "typecheck": "tsc --noEmit"
+  },
+  "devDependencies": {
+    "@tailwindcss/cli": "^4.0.0",
+    "@types/chrome": "^0.0.268",
+    "@types/node": "^26.6.5",
+    "@types/react": "^19.0.0",
+    "@types/react-dom": "^19.0.0",
+    "esbuild": "^0.21.5",
+    "tailwindcss": "^4.0.0",
+    "typescript": "^5.4.0"
+  },
+  "dependencies": {
+    "lucide-react": "^0.469.0",
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0"
+  }
+}

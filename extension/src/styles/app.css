@@ -1,0 +1,114 @@
+@import "tailwindcss";
+
+/* Scan all extension source (popup, side panel, content overlays) for class
+   names so Tailwind only ships the utilities we actually use. */
+@source "../**/*.{ts,tsx}";
+
+/* ============================================================
+   Sentinel design tokens — mirrored from the dashboard's
+   app/globals.css (dark theme) so the extension is visually
+   identical to the product.
+   ============================================================ */
+@theme {
+  --color-app: #ffffff;
+  --color-app-2: #f5f5f7;
+  --color-surface: #ffffff;
+  --color-surface-2: #f5f5f7;
+  --color-strong: #1d1d1f;
+  --color-muted: #6e6e73;
+  --color-faint: #86868b;
+
+  --color-mint: #4ade80;
+  --color-coral: #fb7185;
+  --color-lavender: #a78bfa;
+
+  --color-gh-blue: #2f81f7;
+  --color-gh-purple: #a371f7;
+  --color-gh-cyan: #56d4dd;
+  --color-gh-green: #3fb950;
+  --color-gh-orange: #e3833c;
+
+  --color-sev-critical: #ef4444;
+  --color-sev-high: #f97316;
+  --color-sev-medium: #eab308;
+  --color-sev-low: #84cc16;
+  --color-sev-info: #22d3ee;
+
+  --color-cyan-glow: #38bdf8;
+}
+
+/* Base surface — used by popup/side panel bodies. */
+.bg-app {
+  background: #ffffff;
+  color: var(--color-strong);
+  font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Helvetica Neue", Arial, sans-serif;
+}
+.text-strong { color: var(--color-strong); }
+.text-muted { color: var(--color-muted); }
+.text-faint { color: var(--color-faint); }
+
+/* ============================================================
+   Glass cards — the dashboard's signature surface.
+   ============================================================ */
+.glass {
+  background: #f5f5f7;
+  border: 1px solid #e5e5e7;
+  border-radius: 14px;
+}
+.glass-hover { transition: all 0.2s ease; }
+.glass-hover:hover {
+  background: #ffffff;
+  border-color: #d2d2d7;
+  transform: translateY(-1px);
+}
+
+/* Brand button */
+.btn-brand {
+  background: #0071e3;
+  color: #ffffff;
+  font-weight: 600;
+  border-radius: 999px;
+  transition: filter 0.15s ease, transform 0.1s ease;
+}
+.btn-brand:hover { filter: brightness(1.08); }
+.btn-brand:active { transform: translateY(1px); }
+.btn-ghost {
+  background: #ffffff;
+  border: 1px solid #d2d2d7;
+  border-radius: 999px;
+  color: var(--color-strong);
+  transition: background 0.15s ease;
+}
+.btn-ghost:hover { background: #f5f5f7; }
+
+/* Severity pills */
+.sev-critical { color: #fff; background: rgba(239, 68, 68, 0.18); border: 1px solid rgba(239, 68, 68, 0.4); }
+.sev-high { color: #ffd9c2; background: rgba(249, 115, 22, 0.16); border: 1px solid rgba(249, 115, 22, 0.4); }
+.sev-medium { color: #fff3c2; background: rgba(234, 179, 8, 0.16); border: 1px solid rgba(234, 179, 8, 0.4); }
+.sev-low { color: #e6ffc2; background: rgba(132, 204, 22, 0.16); border: 1px solid rgba(132, 204, 22, 0.4); }
+.sev-info { color: #c2f7ff; background: rgba(34, 211, 238, 0.16); border: 1px solid rgba(34, 211, 238, 0.4); }
+
+/* Animations */
+@keyframes sentinel-spin { to { transform: rotate(360deg); } }
+.spin { animation: sentinel-spin 0.8s linear infinite; }
+@keyframes sentinel-fade { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: none; } }
+.fade-in { animation: sentinel-fade 0.2s ease both; }
+@keyframes sentinel-pulse { 0%,100% { opacity: 1; } 50% { opacity: 0.4; } }
+.skeleton {
+  background: linear-gradient(90deg, rgba(255,255,255,0.04), rgba(255,255,255,0.09), rgba(255,255,255,0.04));
+  background-size: 200% 100%;
+  animation: sentinel-shimmer 1.2s ease-in-out infinite;
+  border-radius: 8px;
+}
+@keyframes sentinel-shimmer { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }
+
+/* Custom scrollbar to match the dark theme */
+::-webkit-scrollbar { width: 8px; height: 8px; }
+::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.12); border-radius: 8px; }
+::-webkit-scrollbar-track { background: transparent; }
+
+/* ============================================================
+   Content-script overlay shell. Injected inside a Shadow DOM,
+   so these styles are scoped and cannot leak into the host page.
+   ============================================================ */
+.sentinel-overlay-host { all: initial; }

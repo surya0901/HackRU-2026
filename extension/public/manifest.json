@@ -1,0 +1,59 @@
+{
+  "manifest_version": 3,
+  "name": "Sentinel — AI Security Assistant",
+  "short_name": "Sentinel",
+  "version": "0.1.0",
+  "description": "GitHub Advanced Security for AI agents, in your browser. Prompt Shield, secret-leak prevention, GitHub trust overlay, agent/MCP discovery, and a Security Copilot wired to your real Sentinel dashboard.",
+  "icons": {
+    "16": "icons/icon-16.png",
+    "32": "icons/icon-32.png",
+    "48": "icons/icon-48.png",
+    "128": "icons/icon-128.png"
+  },
+  "action": {
+    "default_title": "Sentinel",
+    "default_popup": "popup.html",
+    "default_icon": {
+      "16": "icons/icon-16.png",
+      "32": "icons/icon-32.png",
+      "48": "icons/icon-48.png",
+      "128": "icons/icon-128.png"
+    }
+  },
+  "background": {
+    "service_worker": "background.js",
+    "type": "module"
+  },
+  "side_panel": {
+    "default_path": "sidepanel.html"
+  },
+  "permissions": [
+    "storage",
+    "contextMenus",
+    "notifications",
+    "sidePanel",
+    "scripting",
+    "activeTab"
+  ],
+  "host_permissions": [
+    "http://localhost:3000/*",
+    "https://*.vercel.app/*",
+    "https://sentinel-security-console.sg1670.chatgpt.site/*"
+  ],
+  "content_scripts": [
+    {
+      "matches": ["https://github.com/*"],
+      "js": ["content-github.js", "content-pagescan.js"],
+      "run_at": "document_idle"
+    }
+  ],
+  "web_accessible_resources": [
+    {
+      "resources": ["app.css", "icons/*", "content-pagescan.js"],
+      "matches": ["https://github.com/*"]
+    }
+  ],
+  "content_security_policy": {
+    "extension_pages": "script-src 'self'; object-src 'self'; style-src 'self' 'unsafe-inline'"
+  }
+}
