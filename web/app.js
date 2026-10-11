@@ -525,7 +525,7 @@ function integrationMarkup(review) {
   const gapRows = [...review.contextual.map(gap => ({ ...gap, severity: 'context' })), ...review.groups].slice(0, 8);
   return `
     <div class="console-head">
-      <div><button id="backHome" type="button">← Site</button><span class="console-brand wordmark-console"><img src="heimdall-wordmark.png" alt="Heimdall"><small>Review</small></span></div>
+      <div><button id="backHome" type="button">← Site</button><span class="console-brand wordmark-console"><img src="heimdall-wordmark.png" alt="Heimdall"></span></div>
       <div><button id="newComparison" type="button">New comparison</button><button id="exportIntegration" type="button">Export</button></div>
     </div>
     <main class="integration-main">
@@ -811,7 +811,7 @@ function consoleMarkup(scan) {
   const improvement = Math.min(100, scan.score + scan.findings.reduce((total, finding) => total + finding.points, 0));
   return `
     <div class="console-head">
-      <div><button id="backHome" type="button">← Site</button><span class="console-brand wordmark-console"><img src="heimdall-wordmark.png" alt="Heimdall"><small>Report</small></span></div>
+      <div><button id="backHome" type="button">← Site</button><span class="console-brand wordmark-console"><img src="heimdall-wordmark.png" alt="Heimdall"></span></div>
       <div><span class="source-note">Public source and package data</span><button id="rescanRepo" type="button">Scan again</button><button id="exportReport" type="button">Export</button></div>
     </div>
     <div class="console-shell">
@@ -1394,42 +1394,6 @@ function setupLandingInteractions() {
 
   const sections = $$('main section[id]');
   const navLinks = $$('.links a');
-  const floatHeadings = $$('[data-scroll-float]');
-  const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-  if (!reduceMotion) {
-    floatHeadings.forEach(heading => {
-      const label = heading.textContent.trim();
-      heading.setAttribute('aria-label', label);
-      heading.textContent = '';
-      [...label].forEach((character, index) => {
-        const span = document.createElement('span');
-        span.className = 'scroll-float-char';
-        span.setAttribute('aria-hidden', 'true');
-        span.style.setProperty('--char-index', index);
-        span.textContent = character === ' ' ? '\u00a0' : character;
-        heading.append(span);
-      });
-    });
-  }
-  const updateScrollFloat = () => {
-    if (reduceMotion) return;
-    floatHeadings.forEach(heading => {
-      const bounds = heading.getBoundingClientRect();
-      const travel = window.innerHeight * 0.72;
-      const progress = heading.dataset.floatComplete === 'true'
-        ? 1
-        : Math.max(0, Math.min(1, (window.innerHeight - bounds.top) / travel));
-      if (progress >= 0.995) heading.dataset.floatComplete = 'true';
-      const characters = $$('.scroll-float-char', heading);
-      characters.forEach((character, index) => {
-        const start = index / Math.max(1, characters.length) * 0.32;
-        const local = Math.max(0, Math.min(1, (progress - start) / 0.68));
-        const eased = 1 - Math.pow(1 - local, 3);
-        character.style.opacity = eased;
-        character.style.transform = `translateY(${(1 - eased) * 105}%) scaleX(${0.76 + eased * 0.24}) scaleY(${1.85 - eased * 0.85})`;
-      });
-    });
-  };
   const updateScroll = () => {
     const max = document.documentElement.scrollHeight - window.innerHeight;
     $('#scrollProgress').style.width = `${max > 0 ? Math.min(100, window.scrollY / max * 100) : 0}%`;
@@ -1437,30 +1401,10 @@ function setupLandingInteractions() {
     sections.forEach(section => { if (section.getBoundingClientRect().top <= 120) current = section.id; });
     navLinks.forEach(link => link.classList.toggle('active', link.getAttribute('href') === `#${current}`));
     updateJourneyStory();
-    updateScrollFloat();
   };
   updateScroll();
   window.addEventListener('scroll', updateScroll, { passive: true });
   window.addEventListener('resize', updateJourneyStory, { passive: true });
-
-  const tiltCard = $('[data-tilt-card]');
-  if (tiltCard && window.matchMedia('(pointer: fine)').matches && !window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
-    const resetTilt = () => {
-      tiltCard.style.setProperty('--tilt-x', '0deg');
-      tiltCard.style.setProperty('--tilt-y', '0deg');
-      tiltCard.style.setProperty('--lift', '0px');
-    };
-    tiltCard.addEventListener('pointermove', event => {
-      const bounds = tiltCard.getBoundingClientRect();
-      const x = (event.clientX - bounds.left) / bounds.width - 0.5;
-      const y = (event.clientY - bounds.top) / bounds.height - 0.5;
-      tiltCard.style.setProperty('--tilt-x', `${(-y * 4).toFixed(2)}deg`);
-      tiltCard.style.setProperty('--tilt-y', `${(x * 5).toFixed(2)}deg`);
-      tiltCard.style.setProperty('--lift', '-5px');
-    });
-    tiltCard.addEventListener('pointerleave', resetTilt);
-    tiltCard.addEventListener('blur', resetTilt);
-  }
 }
 
 document.addEventListener('keydown', event => {
