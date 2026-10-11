@@ -320,3 +320,7 @@ h1{margin-top:18px}h1 em{background:none;color:inherit}
 .integration-score.score-low,.integration-score.score-medium,.integration-score.score-high{border-color:var(--score-border);border-radius:16px;background:var(--score-surface);color:var(--score-color)}.integration-score.score-low>span,.integration-score.score-low small,.integration-score.score-medium>span,.integration-score.score-medium small,.integration-score.score-high>span,.integration-score.score-high small{color:var(--score-color)}
 .twin-grid article.score-low,.twin-grid article.score-medium,.twin-grid article.score-high{border-color:var(--score-border);background:var(--score-surface)}.twin-grid article.score-low>strong,.twin-grid article.score-medium>strong,.twin-grid article.score-high>strong{color:var(--score-color)}.twin-grid article.score-low .radius i,.twin-grid article.score-medium .radius i,.twin-grid article.score-high .radius i{background:var(--score-color)}
 .modal img{width:190px;max-width:75%;height:auto}
+
+/* Dashboard accents keep the workspace from feeling purely monochrome. */
+.dashboard-title small,.dashboard-metrics small,.repository-card-top small,.repository-card-foot span:last-child{color:#8a5a00}
+.repository-card:hover{border-color:#d6a11d}.dashboard-main .dashboard-empty button:focus-visible,.dashboard-main .repository-card:focus-visible{outline-color:#8a5a00!important}
