@@ -362,3 +362,22 @@ footer{background:#e8e2d6}
 @media(max-width:900px){.hero{margin-inline:14px;width:auto}.realm-gate{inset:-120px}.hero::after{display:none}}
 @media(max-width:760px){.hero{padding-inline:20px;border-radius:26px}.realm-gate{opacity:.38}.hero .proof article{border-color:rgba(220,198,153,.25)}}
 @media(prefers-reduced-motion:reduce){.realm-gate::after,.realm-gate i{animation:none!important}}
+
+/* Editorial portal treatment: flat geometry, hard edges, no sci-fi glow. */
+.hero{background:#e8e2d7;color:var(--realm-ink);border:1px solid #cfc6b7}
+.hero::before{right:-260px;top:-410px;width:860px;height:860px;border-color:#aa9b80;box-shadow:0 0 0 72px #e8e2d7,0 0 0 73px #cfc6b7,0 0 0 145px #e8e2d7,0 0 0 146px #d7cebf}
+.hero::after{left:42%;right:-3%;bottom:72px;height:2px;background:#a77a2e;transform:rotate(-9deg)}
+.hero-label,.hero .lede,.hero .hint{color:#55524d}.hero-label::before{background:#a77a2e}
+.hero h1,.hero h1 em{color:#16181d}.hero .hint button{color:#16181d}.hero .hint span{color:#6d6962}
+.hero .scan-mode-tabs{border-color:#c4b9a7;background:#d8d0c3}.hero .scan-mode-tabs button{color:#625e57}.hero .scan-mode-tabs button.active{background:#fff;color:#15171b}
+.hero #scan{border-color:#c4b9a7;box-shadow:12px 12px 0 #d0c7b9}.hero #scan .green{background:var(--realm-navy)!important;color:#fff!important}
+.hero-board{border-color:#091833;background:var(--realm-navy);box-shadow:16px 18px 0 #b6a789}
+.hero-board:hover,.hero-board:focus-visible{box-shadow:20px 24px 0 #ad9b78}
+.realm-gate{opacity:.32}
+.realm-gate::before{border:2px solid #cfad68;box-shadow:none}
+.realm-gate::after{border:1px solid #cfad68;animation:none}
+.realm-gate i:nth-child(1){border:1px solid #8da0b9;border-left-color:transparent;border-bottom-color:transparent;animation:none}
+.realm-gate i:nth-child(2){border:1px solid #cfad68}
+.realm-gate i:nth-child(3){display:none}
+.board-number{text-shadow:none}.hero .proof{border-color:#bbb09f}.hero .proof article{border-color:#c7bcaa}.hero .proof small{color:#7a5719}.hero .proof b{color:#1b1d21}
+.final::after{box-shadow:none}
