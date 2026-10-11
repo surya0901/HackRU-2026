@@ -5,11 +5,14 @@ import AeroShards from './AeroShards';
 const mount = document.querySelector('#aeroShardsMount');
 
 if (mount) {
-  createRoot(mount).render(
-    <AeroShards
-      backgroundColor="#ffffff"
-      shardColor="#91641a"
-      accentColor="#fff0c2"
+  const root = createRoot(mount);
+  const render = () => {
+    const dark = document.documentElement.classList.contains('dark');
+    root.render(
+      <AeroShards
+      backgroundColor={dark ? '#181818' : '#ffffff'}
+      shardColor={dark ? '#BF9B30' : '#91641a'}
+      accentColor={dark ? '#fff8df' : '#fff0c2'}
       placement="full"
       flow="stream"
       material="chrome"
@@ -25,8 +28,8 @@ if (mount) {
       shardSize={1.25}
       stretch={1}
       turbulence={0.55}
-      glow={0.9}
-      edgeSoftness={1.25}
+      glow={dark ? 1.35 : 0.9}
+      edgeSoftness={dark ? 0.7 : 1.25}
       bloom={0}
       grain={0}
       chromaticAberration={0}
@@ -37,5 +40,12 @@ if (mount) {
       holdToGather
       onError={() => mount.classList.add('aero-shards-unavailable')}
     />
-  );
+    );
+  };
+
+  render();
+  new MutationObserver(render).observe(document.documentElement, {
+    attributes: true,
+    attributeFilter: ['class']
+  });
 }

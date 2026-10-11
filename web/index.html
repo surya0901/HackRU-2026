@@ -4,11 +4,20 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="description" content="Heimdall checks a public website or GitHub project, explains possible security problems in plain language, and shows what to fix first.">
-<meta name="theme-color" content="#ffffff">
+<meta name="theme-color" id="themeColor" content="#ffffff">
 <meta property="og:type" content="website">
 <meta property="og:title" content="Heimdall — Understand your project's security">
 <meta property="og:description" content="Check a public project and understand what needs attention without security jargon.">
 <title>Heimdall — Understand your project's security</title>
+<script>
+(() => {
+  let savedTheme = null;
+  try { savedTheme = localStorage.getItem('heimdall-theme'); } catch (_) {}
+  const dark = savedTheme ? savedTheme === 'dark' : window.matchMedia('(prefers-color-scheme: dark)').matches;
+  document.documentElement.classList.toggle('dark', dark);
+  document.documentElement.dataset.theme = dark ? 'dark' : 'light';
+})();
+</script>
 <link rel="icon" href="heimdall-logo.svg" type="image/svg+xml">
 <link rel="stylesheet" href="styles.css?v=heimdall-journey-2">
 <link rel="stylesheet" href="aero-shards.bundle.css">
@@ -35,6 +44,7 @@
 <a href="#extension">Gemini</a>
 </div>
 <div class="actions">
+<button id="theme" class="theme-toggle" data-theme-toggle type="button" aria-label="Switch to dark mode" aria-pressed="false" title="Switch to dark mode"><span aria-hidden="true">☾</span></button>
 <button id="launchConsole" class="signin" type="button">Open dashboard</button>
 <button class="green project-demo" type="button">Try an example</button>
 <button id="navToggle" class="nav-toggle" type="button" aria-label="Open navigation" aria-expanded="false">☰</button>

@@ -24,6 +24,46 @@ let replayTimer = null;
 let drawerReturnFocus = null;
 let scanMode = 'project';
 
+const themeColor = $('#themeColor');
+const systemTheme = window.matchMedia('(prefers-color-scheme: dark)');
+
+function storedTheme() {
+  try { return localStorage.getItem('heimdall-theme'); } catch (_) { return null; }
+}
+
+function applyTheme(theme, persist = false) {
+  const dark = theme === 'dark';
+  document.documentElement.classList.toggle('dark', dark);
+  document.documentElement.dataset.theme = dark ? 'dark' : 'light';
+  themeColor?.setAttribute('content', dark ? '#181818' : '#ffffff');
+  $$('[data-theme-toggle]').forEach(button => {
+    const nextMode = dark ? 'light' : 'dark';
+    button.setAttribute('aria-label', `Switch to ${nextMode} mode`);
+    button.setAttribute('title', `Switch to ${nextMode} mode`);
+    button.setAttribute('aria-pressed', String(dark));
+    const icon = $('span', button);
+    if (icon) icon.textContent = dark ? '☀' : '☾';
+  });
+  if (persist) {
+    try { localStorage.setItem('heimdall-theme', dark ? 'dark' : 'light'); } catch (_) {}
+  }
+}
+
+function themeToggleMarkup() {
+  const dark = document.documentElement.classList.contains('dark');
+  const nextMode = dark ? 'light' : 'dark';
+  return `<button class="theme-toggle console-theme-toggle" data-theme-toggle type="button" aria-label="Switch to ${nextMode} mode" aria-pressed="${dark}" title="Switch to ${nextMode} mode"><span aria-hidden="true">${dark ? '☀' : '☾'}</span></button>`;
+}
+
+applyTheme(document.documentElement.classList.contains('dark') ? 'dark' : 'light');
+document.addEventListener('click', event => {
+  if (!event.target.closest('[data-theme-toggle]')) return;
+  applyTheme(document.documentElement.classList.contains('dark') ? 'light' : 'dark', true);
+});
+systemTheme.addEventListener('change', event => {
+  if (!storedTheme()) applyTheme(event.matches ? 'dark' : 'light');
+});
+
 function parseRepository(value) {
   const trimmed = String(value || '').trim().replace(/\.git\/?$/i, '');
   const match = trimmed.match(/^https?:\/\/(?:www\.)?github\.com\/([A-Za-z0-9_.-]+)\/([A-Za-z0-9_.-]+)\/?$/i);
@@ -544,7 +584,7 @@ function integrationMarkup(review) {
   return `
     <div class="console-head">
       <div><button id="backHome" type="button">← Site</button><span class="console-brand wordmark-console"><img src="heimdall-wordmark.png" alt="Heimdall"></span></div>
-      <div><button id="newComparison" type="button">New comparison</button><button id="exportIntegration" type="button">Export</button></div>
+      <div>${themeToggleMarkup()}<button id="newComparison" type="button">New comparison</button><button id="exportIntegration" type="button">Export</button></div>
     </div>
     <main class="integration-main">
       <section class="integration-hero ${esc(review.decision.tone)}">
@@ -838,7 +878,7 @@ function dashboardMarkup(scans) {
   return `
     <div class="console-head">
       <div><button id="backHome" type="button">← Site</button><span class="console-brand wordmark-console"><img src="heimdall-wordmark.png" alt="Heimdall"></span></div>
-      <div><span class="source-note">Saved on this device</span><button id="scanNewRepo" type="button">Scan a repository</button></div>
+      <div><span class="source-note">Saved on this device</span>${themeToggleMarkup()}<button id="scanNewRepo" type="button">Scan a repository</button></div>
     </div>
     <main class="dashboard-main">
       <section>
@@ -899,7 +939,7 @@ function consoleMarkup(scan) {
   return `
     <div class="console-head">
       <div><button id="backHome" type="button">← Dashboard</button><span class="console-brand wordmark-console"><img src="heimdall-wordmark.png" alt="Heimdall"></span></div>
-      <div><span class="source-note">Public source and package data</span><button id="rescanRepo" type="button">Scan again</button><button id="exportReport" type="button">Export</button></div>
+      <div><span class="source-note">Public source and package data</span>${themeToggleMarkup()}<button id="rescanRepo" type="button">Scan again</button><button id="exportReport" type="button">Export</button></div>
     </div>
     <div class="console-shell">
       <aside>
