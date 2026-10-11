@@ -309,3 +309,10 @@ main::after{content:"";position:absolute;z-index:-1;top:150px;right:-21vw;width:
 @media(max-width:900px){.hero-layout{grid-template-columns:1fr}.hero-board{min-height:auto;transform:none;box-shadow:10px 12px 0 #e9e9ec}.board-number{margin-bottom:40px}.checks-board{grid-template-columns:1fr}.checks-side-note{position:static}.extension-showcase{grid-template-columns:1fr}.browser-frame{transform:none}.browser-frame::after{display:none}}
 @media(max-width:760px){main::before,main::after{display:none}.hero{padding-top:48px}.hero h1{font-size:clamp(48px,15vw,68px)}.hero .scan-mode-tabs{margin-inline:0}.proof{grid-template-columns:1fr}.proof article{border-left:0;border-top:1px solid #d9d9de}.proof article:first-child{border-top:0}.journey-story{margin-top:0}.journey-pin::before{display:none}.journey-pin .intro{padding-right:0}.scroll-story-cards article{padding:26px}.scroll-story-cards article h3{margin-top:25px}.fixes{grid-template-columns:1fr}.fixes article:nth-child(odd){border-right:0}.fixes article{min-height:0;padding:68px 0 28px}.fixes article::before{left:0}.fixes article i{right:0}.section-marker{top:58px}.extension-showcase{padding-block:112px 90px}.final{margin-inline:14px;width:auto;padding:78px 24px;border-radius:26px}.final h2{font-size:clamp(42px,13vw,60px)}}
 @media(prefers-reduced-motion:reduce){.hero-board,.browser-frame{transform:none}}
+
+/* User-provided Heimdall trident wordmark. */
+.wordmark-brand{display:block!important;width:132px!important;height:44px!important;flex:0 0 132px!important;overflow:hidden;border-radius:7px;background:#0c3268}
+.wordmark-brand img,.brand.wordmark-brand img{display:block!important;width:132px!important;height:44px!important;object-fit:cover;filter:none!important}
+footer .wordmark-brand,footer .brand.wordmark-brand img{width:132px!important;height:44px!important}
+.final .final-wordmark{width:220px;height:auto;border-radius:10px}
+@media(max-width:430px){.wordmark-brand{width:108px!important;height:36px!important;flex-basis:108px!important}.wordmark-brand img,.brand.wordmark-brand img{width:108px!important;height:36px!important}.final .final-wordmark{width:180px}}
