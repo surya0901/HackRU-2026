@@ -1,6 +1,7 @@
 import { createRoot } from 'react-dom/client';
 
 import AeroShards from './AeroShards';
+import HeadlineReel from './HeadlineReel';
 
 const mount = document.querySelector('#aeroShardsMount');
 
@@ -48,4 +49,12 @@ if (mount) {
     attributes: true,
     attributeFilter: ['class']
   });
+}
+
+const headlineMount = document.querySelector('#glyphLotteryHeadline');
+
+if (headlineMount) {
+  createRoot(headlineMount).render(
+    <HeadlineReel text="Understand your project before you ship it." />
+  );
 }

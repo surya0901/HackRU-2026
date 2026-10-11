@@ -389,3 +389,15 @@ h1{margin-top:18px}h1 em{background:none;color:inherit}
 .hero>.aero-shards-layer{top:-64px}nav{background:rgba(255,255,255,.66);backdrop-filter:blur(7px) saturate(.9);-webkit-backdrop-filter:blur(7px) saturate(.9)}
 .dark nav{background:rgba(24,24,24,.54);backdrop-filter:blur(7px) saturate(.9);-webkit-backdrop-filter:blur(7px) saturate(.9)}
 nav{z-index:50;isolation:isolate}nav>.brand,nav>.links,nav>.actions{position:relative;z-index:2}
+
+/* The ending uses the actual Heimdall mark to fill the canvas, not decoration. */
+.final{position:relative;overflow:hidden;min-height:500px;display:grid;grid-template-columns:minmax(0,1.25fr) minmax(280px,.75fr);align-items:center;gap:48px;padding:72px 80px;text-align:left;background:linear-gradient(112deg,#f7f7f8 0 64%,#ece9e1 64% 100%)}
+.final-copy{position:relative;z-index:1;max-width:760px}.final-copy h2{max-width:760px;margin:24px 0 0}.final-copy p{max-width:650px;margin:18px 0 28px;color:#55555a}.final-copy button{align-self:flex-start}
+.headline-reel{display:block}.headline-reel__word{display:inline-block;white-space:nowrap}.headline-reel__space{display:inline}.headline-reel__glyph{display:inline-block;min-width:.02em;will-change:transform,filter,color}.headline-reel__glyph.is-spinning{color:#8a5a00;filter:blur(.8px);transform:translateY(-.08em)}.headline-reel__glyph.is-settled{animation:glyph-lock .24s cubic-bezier(.2,.8,.2,1) both}
+.dark .headline-reel__glyph.is-spinning{color:#bf9b30}
+.final-sigil{height:360px;display:grid;place-items:center;border-left:1px solid rgba(138,90,0,.2)}.final-sigil img{width:min(290px,24vw);height:auto;opacity:.88;animation:sigil-float 6s ease-in-out infinite alternate}
+.dark .final{background:linear-gradient(112deg,#202020 0 64%,#29261f 64% 100%)}.dark .final-sigil{border-left-color:rgba(191,155,48,.28)}.dark .final-sigil img{filter:invert(1) sepia(.35);opacity:.82}
+@keyframes sigil-float{from{transform:translateY(-5px)}to{transform:translateY(7px)}}
+@keyframes glyph-lock{0%{transform:translateY(-.12em);filter:blur(.8px);color:#8a5a00}58%{transform:translateY(.035em)}100%{transform:translateY(0);filter:blur(0);color:inherit}}
+@media(max-width:760px){.final{grid-template-columns:1fr;gap:28px;padding:64px 28px;text-align:center}.final-copy p{margin-left:auto;margin-right:auto}.final-sigil{height:210px;border-left:0;border-top:1px solid rgba(138,90,0,.2)}.final-sigil img{width:150px}.final-copy button{align-self:center}}
+@media(prefers-reduced-motion:reduce){.final-sigil img,.headline-reel__glyph{animation:none}.headline-reel__glyph{filter:none!important;transform:none!important;color:inherit!important}}
