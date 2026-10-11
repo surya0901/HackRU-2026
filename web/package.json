@@ -1,0 +1,17 @@
+{
+  "name": "heimdall-web-effects",
+  "private": true,
+  "version": "1.0.0",
+  "type": "module",
+  "scripts": {
+    "build": "esbuild src/aero-shards-entry.jsx --bundle --format=iife --jsx=automatic --minify --outfile=aero-shards.bundle.js"
+  },
+  "dependencies": {
+    "react": "19.3.0",
+    "react-dom": "19.3.0",
+    "vgpu": "0.5.0"
+  },
+  "devDependencies": {
+    "esbuild": "0.28.2"
+  }
+}

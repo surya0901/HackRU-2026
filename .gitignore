@@ -1,2 +1,3 @@
 gemini-worker/.dev.vars
 .wrangler/
+web/node_modules/
