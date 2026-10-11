@@ -3,6 +3,8 @@ const $$ = (selector, parent = document) => [...parent.querySelectorAll(selector
 const esc = (value = '') => String(value).replace(/[&<>"']/g, char => ({
   '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
 }[char]));
+const scoreClass = score => Number(score) <= 30 ? 'score-low' : Number(score) >= 90 ? 'score-high' : 'score-medium';
+const scoreLabel = score => Number(score) <= 30 ? 'Urgent' : Number(score) >= 90 ? 'Ready' : 'Needs attention';
 
 const modal = $('#modal');
 const modalPanel = $('#modal > div');
@@ -547,7 +549,7 @@ function integrationMarkup(review) {
     <main class="integration-main">
       <section class="integration-hero ${esc(review.decision.tone)}">
         <div><span>Integration review</span><h1>${esc(review.decision.label)}</h1><p>${esc(review.decision.reason)}</p></div>
-        <div class="integration-score"><strong>${review.tool.score}</strong><span>/100</span><small>Tool readiness</small></div>
+        <div class="integration-score ${scoreClass(review.tool.score)}"><strong>${review.tool.score}</strong><span>/100</span><small>${scoreLabel(review.tool.score)} · Tool readiness</small></div>
       </section>
       <section class="repo-pair" aria-label="Repositories compared">
         <article><small>Your project</small><h2>${esc(review.project.meta.full_name)}</h2><p>${review.project.sourceStats.read} files checked · ${review.project.findings.length} detailed findings</p></article>
@@ -796,7 +798,7 @@ function historyMarkup(scan) {
   const history = loadHistory().filter(item => item.repo.url === scan.repo.url).slice(0, 8);
   const diff = scan.diff || { added: 0, fixed: 0, unchanged: scan.findings.length };
   return `<div class="diff-summary"><article><b>${diff.added}</b><span>New</span></article><article><b>${diff.fixed}</b><span>Fixed</span></article><article><b>${diff.unchanged}</b><span>Unchanged</span></article></div>
-    <div class="history-list">${history.map((item, index) => `<article><span><small>${index ? 'PRIOR SCAN' : 'CURRENT SCAN'}</small><b>${new Date(item.createdAt).toLocaleString([], { dateStyle: 'medium', timeStyle: 'short' })}</b></span><code>${esc((item.commit || '').slice(0, 7))}</code><span>${item.score}/100</span><span>${item.findings.length} findings</span></article>`).join('')}</div>
+    <div class="history-list">${history.map((item, index) => `<article><span><small>${index ? 'PRIOR SCAN' : 'CURRENT SCAN'}</small><b>${new Date(item.createdAt).toLocaleString([], { dateStyle: 'medium', timeStyle: 'short' })}</b></span><code>${esc((item.commit || '').slice(0, 7))}</code><span class="score-value ${scoreClass(item.score)}">${item.score}/100</span><span>${item.findings.length} findings</span></article>`).join('')}</div>
     <p class="scope-note">History is stored on this device. A future hosted workspace can sync private projects and scheduled scans across a team.</p>`;
 }
 
@@ -846,7 +848,7 @@ function dashboardMarkup(scans) {
           const date = new Date(scan.createdAt).toLocaleString([], { dateStyle: 'medium', timeStyle: 'short' });
           const findings = scan.findings?.length || 0;
           return `<button class="repository-card" type="button" data-repository="${index}" aria-label="Open ${esc(scan.meta?.full_name || scan.repo.url)}">
-            <span class="repository-card-top"><span><small>REPOSITORY</small><strong>${esc(scan.meta?.full_name || `${scan.repo.owner}/${scan.repo.repo}`)}</strong></span><b>${scan.score}/100</b></span>
+            <span class="repository-card-top"><span><small>REPOSITORY</small><strong>${esc(scan.meta?.full_name || `${scan.repo.owner}/${scan.repo.repo}`)}</strong></span><b class="score-value ${scoreClass(scan.score)}">${scan.score}/100</b></span>
             <span class="repository-card-stats"><span><b>${findings}</b> ${findings === 1 ? 'finding' : 'findings'}</span><span><b>${scan.sourceStats?.read || 0}</b> files checked</span><span><b>${scan.dependencies?.length || 0}</b> packages</span></span>
             <span class="repository-card-foot"><span>Scanned ${esc(date)}</span><span>Open summary →</span></span>
           </button>`;
@@ -913,12 +915,11 @@ function consoleMarkup(scan) {
       </aside>
       <main class="console-main">
         <section id="panel-overview" role="tabpanel" aria-labelledby="tab-overview" data-panel="overview">
-          <header class="summary-hero"><div><div class="summary-eyebrow">${esc(scan.meta.full_name)}</div><h2>${summaryCount} ${summaryCount === 1 ? 'problem needs' : 'problems need'} your attention</h2><p>Nothing here means you were hacked. These are practical improvements that can make your project safer.</p><div class="console-provenance"><span>Branch ${esc(scan.branch)}</span><span>Commit ${esc(scan.commit.slice(0, 7))}</span><span>Scanned ${esc(date)}</span></div></div><div class="summary-status" aria-label="Readiness score ${scan.score} out of 100"><div class="summary-score"><strong>${scan.score}</strong><em>/100</em></div><span>Readiness score</span><small>Based on the checks completed</small></div></header>
+          <header class="summary-hero"><div><div class="summary-eyebrow">${esc(scan.meta.full_name)}</div><h2>${summaryCount} ${summaryCount === 1 ? 'problem needs' : 'problems need'} your attention</h2><p>Nothing here means you were hacked. These are practical improvements that can make your project safer.</p><div class="console-provenance"><span>Branch ${esc(scan.branch)}</span><span>Commit ${esc(scan.commit.slice(0, 7))}</span><span>Scanned ${esc(date)}</span></div></div><div class="summary-status ${scoreClass(scan.score)}" aria-label="${scoreLabel(scan.score)} readiness score: ${scan.score} out of 100"><div class="summary-score"><strong>${scan.score}</strong><em>/100</em></div><span>Readiness score</span><small>${scoreLabel(scan.score)} · Based on the checks completed</small></div></header>
           <section class="summary-start"><div><small>First, fix this</small><h3>${esc(topPlain.title)}</h3><p>${esc(topPlain.meaning)}</p></div><button type="button" data-fix="0">Show me how</button></section>
           <div class="summary-strip"><span><b>${scan.sourceStats.read}</b> public files checked</span><span><b>${scan.dependencies.length}</b> packages checked</span><span><b>${scan.osv.vulnerabilities.length}</b> known package ${scan.osv.vulnerabilities.length === 1 ? 'problem' : 'problems'}</span><span><b>${scan.diff.fixed}</b> fixed since last scan</span></div>
           <div class="summary-section-heading"><div><small>Your results</small><h2>Problems found</h2></div><p>Explained in plain English, with the most important first.</p></div>
           <div class="summary-findings">${summaryFindingRows(scan)}</div>
-          <div class="summary-assurance"><span aria-hidden="true">i</span><div><strong>What this scan can—and cannot—tell you</strong><p>Heimdall reads selected public files and checks known package problems. It does not run your code, access private systems, or guarantee that the whole project is secure.</p></div></div>
         </section>
         <section id="panel-findings" role="tabpanel" aria-labelledby="tab-findings" data-panel="findings" hidden>
           <header class="workspace-title"><div><small>WHAT NEEDS ATTENTION</small><h2>Problems, explained simply</h2><p>Start at the top. Each card tells you what we found, where we found it, and what to do next.</p></div></header>
@@ -949,7 +950,7 @@ function consoleMarkup(scan) {
         </section>
         <section id="panel-twin" role="tabpanel" aria-labelledby="tab-twin" data-panel="twin" hidden>
           <header class="workspace-title"><div><small>COUNTERFACTUAL MODEL</small><h2>Preview controls before merging</h2><p>Review how this heuristic posture indicator could change. Values are calculated from the visible finding weights.</p></div></header>
-          <div class="twin-grid"><article><small>CURRENT</small><strong>${scan.score}</strong><span>Posture indicator</span><div class="radius"><i style="width:${100 - scan.score}%"></i></div><p>${scan.findings.length} active signals</p></article><div class="twin-arrow">→</div><article class="after"><small>IF ALL VISIBLE SIGNALS ARE ADDRESSED</small><strong>${improvement}</strong><span>Modeled indicator</span><div class="radius"><i style="width:${100 - improvement}%"></i></div><p>Requires verification after changes</p></article></div>
+          <div class="twin-grid"><article class="${scoreClass(scan.score)}"><small>CURRENT</small><strong>${scan.score}</strong><span>Posture indicator</span><div class="radius"><i style="width:${100 - scan.score}%"></i></div><p>${scan.findings.length} active signals</p></article><div class="twin-arrow">→</div><article class="after ${scoreClass(improvement)}"><small>IF ALL VISIBLE SIGNALS ARE ADDRESSED</small><strong>${improvement}</strong><span>Modeled indicator</span><div class="radius"><i style="width:${100 - improvement}%"></i></div><p>Requires verification after changes</p></article></div>
           <div class="console-card impact"><h3>What the model assumes</h3><p>Each visible finding’s weight is removed only when its proposed control is selected. Heimdall does not claim the code is fixed until a follow-up scan and test evidence confirm it.</p></div>
         </section>
         <section id="panel-history" role="tabpanel" aria-labelledby="tab-history" data-panel="history" hidden>
@@ -1418,20 +1419,28 @@ function setupLandingInteractions() {
       ? 'Add your project, the public repository you want to learn from, and how you plan to use it. Heimdall checks the evidence, and Gemini explains whether it is a sensible fit.'
       : 'Paste the public GitHub repository you are building. Heimdall checks its files and packages, explains every problem in normal words, and shows what to fix first.';
     $('#scanSubmit').innerHTML = `${reference ? 'Check this reference' : 'Scan my project'} <span aria-hidden="true">→</span>`;
+    if (reference) $('#scan').classList.remove('example-ready');
     repoError.textContent = '';
   };
   $('#projectMode').onclick = () => setScanMode('project');
   $('#referenceMode').onclick = () => setScanMode('reference');
   $('#scan').onsubmit = event => {
     event.preventDefault();
+    $('#scan').classList.remove('example-ready');
     if (scanMode === 'reference') startIntegrationReview(compareProjectInput.value, toolRepoInput.value, useCaseInput.value);
     else startScan(repoInput.value);
   };
-  [repoInput, compareProjectInput, toolRepoInput].forEach(input => input.addEventListener('input', () => { input.removeAttribute('aria-invalid'); repoError.textContent = ''; }));
+  [repoInput, compareProjectInput, toolRepoInput].forEach(input => input.addEventListener('input', () => {
+    input.removeAttribute('aria-invalid');
+    repoError.textContent = '';
+    if (input === repoInput) $('#scan').classList.remove('example-ready');
+  }));
   $$('.project-demo').forEach(button => button.onclick = () => {
     setScanMode('project');
     repoInput.value = 'https://github.com/OWASP/NodeGoat';
-    startScan(repoInput.value);
+    $('#scan').classList.add('example-ready');
+    $('#top').scrollIntoView({ behavior: 'smooth' });
+    window.setTimeout(() => repoInput.focus({ preventScroll: true }), 450);
   });
   $$('.reference-demo').forEach(button => button.onclick = () => {
     setScanMode('reference');
