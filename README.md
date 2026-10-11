@@ -19,10 +19,18 @@ The product deliberately separates four evidence states: observed source evidenc
 
 ## Run the web demo
 
-The web demo has no build step. Serve the repository root with any static server, then open `web/index.html`.
+Serve the repository root with any static server, then open `web/index.html`.
 
 ```bash
 npx serve .
+```
+
+The generated AeroShards browser bundle is committed for the static demo. To rebuild it after changing files in `web/src/`:
+
+```bash
+cd web
+npm install
+npm run build
 ```
 
 ## Build the Chrome extension

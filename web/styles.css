@@ -320,3 +320,11 @@ h1{margin-top:18px}h1 em{background:none;color:inherit}
 .integration-score.score-low,.integration-score.score-medium,.integration-score.score-high{border-color:var(--score-border);border-radius:16px;background:var(--score-surface);color:var(--score-color)}.integration-score.score-low>span,.integration-score.score-low small,.integration-score.score-medium>span,.integration-score.score-medium small,.integration-score.score-high>span,.integration-score.score-high small{color:var(--score-color)}
 .twin-grid article.score-low,.twin-grid article.score-medium,.twin-grid article.score-high{border-color:var(--score-border);background:var(--score-surface)}.twin-grid article.score-low>strong,.twin-grid article.score-medium>strong,.twin-grid article.score-high>strong{color:var(--score-color)}.twin-grid article.score-low .radius i,.twin-grid article.score-medium .radius i,.twin-grid article.score-high .radius i{background:var(--score-color)}
 .modal img{width:190px;max-width:75%;height:auto}
+
+/* Dashboard accents keep the workspace from feeling purely monochrome. */
+.dashboard-title small,.dashboard-metrics small,.repository-card-top small,.repository-card-foot span:last-child{color:#8a5a00}
+.repository-card:hover{border-color:#d6a11d}.dashboard-main .dashboard-empty button:focus-visible,.dashboard-main .repository-card:focus-visible{outline-color:#8a5a00!important}
+
+/* React Bits AeroShards progressively enhances the landing hero. */
+.hero{position:relative;isolation:isolate}.hero>.aero-shards-layer{position:absolute;top:0;bottom:0;left:50%;z-index:-1;width:100vw;overflow:visible;transform:translateX(-50%);pointer-events:none;opacity:1;contain:layout paint;-webkit-mask-image:radial-gradient(ellipse 56% 50% at 50% 38%,rgba(0,0,0,.08) 0%,rgba(0,0,0,.12) 34%,rgba(0,0,0,.58) 66%,#000 100%);mask-image:radial-gradient(ellipse 56% 50% at 50% 38%,rgba(0,0,0,.08) 0%,rgba(0,0,0,.12) 34%,rgba(0,0,0,.58) 66%,#000 100%)}.hero>.aero-shards-layer.aero-shards-unavailable{display:none}.hero>:not(.aero-shards-layer){position:relative;z-index:1}.hero .hero-label{color:#805500}.hero .lede{max-width:760px;color:#424245;font-weight:500}
+@media(prefers-reduced-motion:reduce){.hero>.aero-shards-layer{opacity:.72}}
