@@ -1394,6 +1394,42 @@ function setupLandingInteractions() {
 
   const sections = $$('main section[id]');
   const navLinks = $$('.links a');
+  const floatHeadings = $$('[data-scroll-float]');
+  const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  if (!reduceMotion) {
+    floatHeadings.forEach(heading => {
+      const label = heading.textContent.trim();
+      heading.setAttribute('aria-label', label);
+      heading.textContent = '';
+      [...label].forEach((character, index) => {
+        const span = document.createElement('span');
+        span.className = 'scroll-float-char';
+        span.setAttribute('aria-hidden', 'true');
+        span.style.setProperty('--char-index', index);
+        span.textContent = character === ' ' ? '\u00a0' : character;
+        heading.append(span);
+      });
+    });
+  }
+  const updateScrollFloat = () => {
+    if (reduceMotion) return;
+    floatHeadings.forEach(heading => {
+      const bounds = heading.getBoundingClientRect();
+      const travel = window.innerHeight * 0.72;
+      const progress = heading.dataset.floatComplete === 'true'
+        ? 1
+        : Math.max(0, Math.min(1, (window.innerHeight - bounds.top) / travel));
+      if (progress >= 0.995) heading.dataset.floatComplete = 'true';
+      const characters = $$('.scroll-float-char', heading);
+      characters.forEach((character, index) => {
+        const start = index / Math.max(1, characters.length) * 0.32;
+        const local = Math.max(0, Math.min(1, (progress - start) / 0.68));
+        const eased = 1 - Math.pow(1 - local, 3);
+        character.style.opacity = eased;
+        character.style.transform = `translateY(${(1 - eased) * 105}%) scaleX(${0.76 + eased * 0.24}) scaleY(${1.85 - eased * 0.85})`;
+      });
+    });
+  };
   const updateScroll = () => {
     const max = document.documentElement.scrollHeight - window.innerHeight;
     $('#scrollProgress').style.width = `${max > 0 ? Math.min(100, window.scrollY / max * 100) : 0}%`;
@@ -1401,6 +1437,7 @@ function setupLandingInteractions() {
     sections.forEach(section => { if (section.getBoundingClientRect().top <= 120) current = section.id; });
     navLinks.forEach(link => link.classList.toggle('active', link.getAttribute('href') === `#${current}`));
     updateJourneyStory();
+    updateScrollFloat();
   };
   updateScroll();
   window.addEventListener('scroll', updateScroll, { passive: true });
