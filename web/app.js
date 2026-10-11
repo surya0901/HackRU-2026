@@ -1405,6 +1405,25 @@ function setupLandingInteractions() {
   updateScroll();
   window.addEventListener('scroll', updateScroll, { passive: true });
   window.addEventListener('resize', updateJourneyStory, { passive: true });
+
+  const tiltCard = $('[data-tilt-card]');
+  if (tiltCard && window.matchMedia('(pointer: fine)').matches && !window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+    const resetTilt = () => {
+      tiltCard.style.setProperty('--tilt-x', '0deg');
+      tiltCard.style.setProperty('--tilt-y', '0deg');
+      tiltCard.style.setProperty('--lift', '0px');
+    };
+    tiltCard.addEventListener('pointermove', event => {
+      const bounds = tiltCard.getBoundingClientRect();
+      const x = (event.clientX - bounds.left) / bounds.width - 0.5;
+      const y = (event.clientY - bounds.top) / bounds.height - 0.5;
+      tiltCard.style.setProperty('--tilt-x', `${(-y * 4).toFixed(2)}deg`);
+      tiltCard.style.setProperty('--tilt-y', `${(x * 5).toFixed(2)}deg`);
+      tiltCard.style.setProperty('--lift', '-5px');
+    });
+    tiltCard.addEventListener('pointerleave', resetTilt);
+    tiltCard.addEventListener('blur', resetTilt);
+  }
 }
 
 document.addEventListener('keydown', event => {

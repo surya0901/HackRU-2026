@@ -291,7 +291,8 @@ main::after{content:"";position:absolute;z-index:-1;top:150px;right:-21vw;width:
 .hero h1{max-width:790px;margin:20px 0 22px;font-size:clamp(58px,7.2vw,102px);line-height:.92;letter-spacing:-.07em}
 .hero .lede{max-width:680px;margin:0 0 32px;font-size:clamp(17px,1.6vw,21px)}
 .hero .scan-mode-tabs{margin:0 0 -12px}.hero #scan{max-width:none;margin:0}.hero .hint{justify-content:flex-start}
-.hero-board{position:relative;min-height:490px;padding:28px 25px 24px;border:1px solid #d2d2d7;border-radius:28px;background:#fff;transform:rotate(1.5deg);box-shadow:16px 18px 0 #e9e9ec}
+.hero-board{--tilt-x:0deg;--tilt-y:0deg;--lift:0px;position:relative;min-height:490px;padding:28px 25px 24px;border:1px solid #d2d2d7;border-radius:28px;background:#fff;transform:perspective(900px) translateY(var(--lift)) rotate(1.5deg) rotateX(var(--tilt-x)) rotateY(var(--tilt-y));transform-style:preserve-3d;transition:transform .16s ease-out,box-shadow .16s ease-out;box-shadow:16px 18px 0 #e9e9ec;outline:none}
+.hero-board:hover,.hero-board:focus-visible{box-shadow:20px 24px 0 #e4e4e7}.hero-board:focus-visible{border-color:#86868b}
 .hero-board::before{content:"";position:absolute;inset:11px;border:1px solid #ededf0;border-radius:20px;pointer-events:none}
 .board-number{position:relative;margin-bottom:72px;color:#1d1d1f;font-size:clamp(72px,9vw,126px);font-weight:750;line-height:.8;letter-spacing:-.09em}
 .board-heading{position:relative;display:flex;justify-content:space-between;padding-bottom:12px;border-bottom:1px solid #d9d9de;color:#1d1d1f;font-size:10px;font-weight:800;letter-spacing:.1em}.board-heading small{color:#86868b;font-weight:600;letter-spacing:0;text-transform:none}
