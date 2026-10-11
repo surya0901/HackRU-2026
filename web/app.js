@@ -561,7 +561,7 @@ function integrationMarkup(review) {
         <div class="integration-gaps">${gapRows.length ? gapRows.map(gap => `<article><div><h3>${esc(gap.title)}${gap.items?.length > 1 ? `<span>Found in ${gap.items.length} places</span>` : ''}</h3><p>${esc(gap.explanation)}</p><strong>What to do: <span>${esc(gap.action)}</span></strong>${gap.evidence ? `<small>${esc(gap.evidence)}</small>` : ''}</div>${Number.isInteger(gap.index) ? `<button type="button" data-tool-fix="${gap.index}">Open evidence</button>` : ''}</article>`).join('') : '<div class="empty-state"><h3>No major compatibility gap was found</h3><p>Review the coverage limits and scan again after integration.</p></div>'}</div>
       </section>
       <section class="gemini-handoff">
-        <div><small>Gemini handoff</small><h2>Continue the work in your Gemini conversation</h2><p>Heimdall sends only repository names and redacted findings—not source code or secret values. Gemini can then explain the safest integration plan using this evidence.</p><div class="gemini-actions"><button id="copyGeminiReport" type="button">Copy report for Gemini</button><button id="sendGeminiReport" class="primary" type="button">${endpointReady ? 'Create Gemini plan' : 'Copy report & open Gemini'}</button></div><p class="gemini-status" id="geminiStatus">${endpointReady ? 'Protected Gemini endpoint connected.' : 'The safe handoff copies the redacted report, then opens Gemini for you to paste it.'}</p></div>
+        <div><small>Gemini handoff</small><h2>Continue the work in your Gemini conversation</h2><p>Heimdall sends only repository names and redacted findings—not source code or secret values. Gemini can then explain the safest integration plan using this evidence.</p><div class="gemini-actions"><button id="copyGeminiReport" type="button">Copy report for Gemini</button><button id="sendGeminiReport" class="primary" type="button">${endpointReady ? 'Create Gemini plan' : 'Prepare report & open Gemini'}</button></div><p class="gemini-status" id="geminiStatus">${endpointReady ? 'Protected Gemini endpoint connected.' : 'One click downloads the redacted report, copies its instructions, and opens Gemini.'}</p></div>
         <div class="gemini-result" id="geminiResult"><strong>No AI-generated plan yet</strong><p>Heimdall’s decision above comes from the real repository scans. Gemini will explain that evidence; it will not create new findings.</p></div>
       </section>
       <p class="integration-limit">Heimdall checks selected public files and known package advisories without running either repository. Scan again after integration to verify what changed.</p>
@@ -579,12 +579,18 @@ function copyGeminiReport(review) {
 function openGeminiHandoff(review, consoleElement) {
   const status = $('#geminiStatus', consoleElement);
   const output = $('#geminiResult', consoleElement);
+  const handoff = {
+    schema_version: 'heimdall.gemini-handoff.v1',
+    instructions: geminiPrompt(review).split('\n\n')[0],
+    report: review.report
+  };
+  download(`heimdall-${review.project.repo.repo}-${review.tool.repo.repo}-gemini-report.json`, JSON.stringify(handoff, null, 2), 'application/json');
   const copyRequest = copyGeminiReport(review);
   window.open('https://gemini.google.com/app', '_blank', 'noopener,noreferrer');
   copyRequest.then(() => {
-    status.textContent = 'Redacted report copied. Paste it into the Gemini tab. If no tab opened, visit gemini.google.com.';
-    output.innerHTML = '<strong>Ready to continue in Gemini</strong><p>The evidence report is on your clipboard. Paste it into the new conversation. Heimdall has not sent source code or secret values.</p>';
-    showToast('Report copied — paste it into Gemini');
+    status.textContent = 'Report downloaded and instructions copied. In Gemini, attach the JSON file or paste the clipboard text.';
+    output.innerHTML = '<strong>Ready to continue in Gemini</strong><p>Attach the downloaded Heimdall JSON report in Gemini. You can also paste the full evidence prompt from your clipboard. Heimdall has not included source code or secret values.</p>';
+    showToast('Gemini report downloaded and copied');
   }).catch(() => {
     status.textContent = 'Gemini opened, but the browser blocked clipboard access.';
     output.innerHTML = '<strong>Copy the report first</strong><p>Return here, select “Copy report for Gemini,” then paste it into the Gemini conversation.</p>';
@@ -612,7 +618,7 @@ async function requestGeminiPlan(review, consoleElement) {
     status.textContent = 'The protected endpoint could not be reached. Use the safe browser handoff instead.';
     output.innerHTML = '<strong>Direct handoff available</strong><p>Nothing was lost. Copy the redacted evidence and continue in Gemini without exposing an API key.</p>';
     const button = $('#sendGeminiReport', consoleElement);
-    button.textContent = 'Copy report & open Gemini';
+    button.textContent = 'Prepare report & open Gemini';
     button.onclick = () => openGeminiHandoff(review, consoleElement);
   }
 }
