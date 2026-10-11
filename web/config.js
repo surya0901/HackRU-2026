@@ -1,3 +1,3 @@
-// Set this to the deployed URL of the protected endpoint in gemini-worker/.
-// Leave it empty on deployments where Gemini has not been connected yet.
-window.HEIMDALL_GEMINI_ENDPOINT = 'http://127.0.0.1:8787';
+// Set this only to a deployed HTTPS endpoint from gemini-worker/.
+// The public site falls back to a copy-and-open Gemini handoff when empty.
+window.HEIMDALL_GEMINI_ENDPOINT = '';
