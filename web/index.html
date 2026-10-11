@@ -20,13 +20,28 @@
 })();
 </script>
 <link rel="icon" href="heimdall-logo.svg" type="image/svg+xml">
-<link rel="stylesheet" href="styles.css?v=heimdall-opening-5">
+<link rel="stylesheet" href="styles.css?v=heimdall-opening-6">
 <link rel="stylesheet" href="aero-shards.bundle.css">
 <script src="config.js?v=heimdall-gemini-handoff-1"></script>
 </head>
 <body>
 <div class="intro-splash" aria-hidden="true">
-<div class="intro-aperture"></div>
+<svg class="intro-aperture" width="100%" height="100%" aria-hidden="true">
+<defs>
+<mask id="introTridentMask">
+<rect width="100%" height="100%" fill="white"/>
+<svg class="intro-cutout" x="50%" y="34%" width="72" height="72" viewBox="0 0 1024 1024" overflow="visible">
+<g transform="translate(512 512)">
+<g>
+<animateTransform attributeName="transform" type="scale" from="1" to="48" begin=".78s" dur=".82s" calcMode="spline" keySplines=".72 0 .22 1" fill="freeze"/>
+<path d="M512 65 623 279l-74-39v355c67-35 119-78 155-130 35-52 53-111 53-178v-34l-74 39 96-218 132 196-82-25v42c0 110-33 207-98 289-51 64-112 116-182 154v55l87-48-124 222-124-222 87 48v-55c-70-38-131-90-182-154-65-82-98-179-98-289v-42l-82 25L245 74l96 218-74-39v34c0 67 18 126 53 178 36 52 88 95 155 130V240l-74 39L512 65Z" transform="translate(-512 -512)" fill="black"/>
+</g>
+</g>
+</svg>
+</mask>
+</defs>
+<rect width="100%" height="100%" fill="#9a7412" mask="url(#introTridentMask)"/>
+</svg>
 <img class="intro-trident" src="heimdall-logo.svg" alt="">
 <span class="intro-label">LOAD HEIMDALL...</span>
 </div>
