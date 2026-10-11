@@ -525,7 +525,7 @@ function integrationMarkup(review) {
   const gapRows = [...review.contextual.map(gap => ({ ...gap, severity: 'context' })), ...review.groups].slice(0, 8);
   return `
     <div class="console-head">
-      <div><button id="backHome" type="button">← Site</button><span class="console-brand"><img src="heimdall-logo.svg" alt=""> Heimdall</span></div>
+      <div><button id="backHome" type="button">← Site</button><span class="console-brand wordmark-console"><img src="heimdall-wordmark.png" alt="Heimdall"><small>Review</small></span></div>
       <div><button id="newComparison" type="button">New comparison</button><button id="exportIntegration" type="button">Export</button></div>
     </div>
     <main class="integration-main">
@@ -811,7 +811,7 @@ function consoleMarkup(scan) {
   const improvement = Math.min(100, scan.score + scan.findings.reduce((total, finding) => total + finding.points, 0));
   return `
     <div class="console-head">
-      <div><button id="backHome" type="button">← Site</button><span class="console-brand"><img src="heimdall-logo.svg" alt=""> Heimdall Console</span></div>
+      <div><button id="backHome" type="button">← Site</button><span class="console-brand wordmark-console"><img src="heimdall-wordmark.png" alt="Heimdall"><small>Report</small></span></div>
       <div><span class="source-note">Public source and package data</span><button id="rescanRepo" type="button">Scan again</button><button id="exportReport" type="button">Export</button></div>
     </div>
     <div class="console-shell">
@@ -819,7 +819,7 @@ function consoleMarkup(scan) {
         <p>WORKSPACE</p>
         <div class="console-tabs" role="tablist" aria-label="Console sections">
         ${[
-          ['overview', 'Summary'], ['findings', `Problems (${scan.findings.length})`], ['fixes', 'Fixes'], ['history', 'Progress']
+          ['overview', 'Summary'], ['findings', `Problems (${summaryCount})`], ['fixes', 'Fixes'], ['history', 'Progress']
         ].map(([id, label], index) => `<button type="button" role="tab" aria-selected="${index === 0}" aria-controls="panel-${id}" id="tab-${id}" data-tab="${id}" class="${index ? '' : 'active'}">${label}</button>`).join('')}
         </div>
         <hr><small>DEVICE WORKSPACE</small>
