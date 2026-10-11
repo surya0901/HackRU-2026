@@ -13,7 +13,8 @@
 (() => {
   let savedTheme = null;
   try { savedTheme = localStorage.getItem('heimdall-theme'); } catch (_) {}
-  const dark = savedTheme ? savedTheme === 'dark' : window.matchMedia('(prefers-color-scheme: dark)').matches;
+  // Heimdall opens in light mode unless the visitor explicitly chose otherwise.
+  const dark = savedTheme === 'dark';
   document.documentElement.classList.toggle('dark', dark);
   document.documentElement.dataset.theme = dark ? 'dark' : 'light';
 })();
