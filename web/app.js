@@ -332,10 +332,26 @@ function loadHistory() {
 }
 
 function saveScan(scan) {
-  const compact = { ...scan, files: scan.files.map(({ path, size }) => ({ path, size })), sources: undefined, packageJson: undefined };
+  const compact = {
+    ...scan,
+    files: scan.files.map(({ path, size }) => ({ path, size })),
+    sources: undefined,
+    packageJson: undefined,
+    diff: { ...scan.diff, previous: undefined }
+  };
   const history = loadHistory().filter(item => item.repo.url !== scan.repo.url || item.commit !== scan.commit);
   history.unshift(compact);
-  localStorage.setItem(HISTORY_KEY, JSON.stringify(history.slice(0, 12)));
+  try {
+    localStorage.setItem(HISTORY_KEY, JSON.stringify(history));
+  } catch (_) {
+    const seen = new Set();
+    const latestForEveryRepository = history.filter(item => {
+      if (seen.has(item.repo.url)) return false;
+      seen.add(item.repo.url);
+      return true;
+    });
+    try { localStorage.setItem(HISTORY_KEY, JSON.stringify(latestForEveryRepository)); } catch (_) {}
+  }
 }
 
 function compareToPrevious(scan) {
@@ -803,6 +819,75 @@ function reportSarif(scan) {
   };
 }
 
+function latestRepositoryScans() {
+  const seen = new Set();
+  return loadHistory().filter(scan => {
+    const url = scan?.repo?.url;
+    if (!url || seen.has(url)) return false;
+    seen.add(url);
+    return true;
+  });
+}
+
+function dashboardMarkup(scans) {
+  const totalFindings = scans.reduce((total, scan) => total + (scan.findings?.length || 0), 0);
+  const averageScore = scans.length ? Math.round(scans.reduce((total, scan) => total + (scan.score || 0), 0) / scans.length) : 0;
+  const latestDate = scans.length ? new Date(scans[0].createdAt).toLocaleString([], { dateStyle: 'medium', timeStyle: 'short' }) : 'No scans yet';
+  return `
+    <div class="console-head">
+      <div><button id="backHome" type="button">← Site</button><span class="console-brand wordmark-console"><img src="heimdall-wordmark.png" alt="Heimdall"></span></div>
+      <div><span class="source-note">Saved on this device</span><button id="scanNewRepo" type="button">Scan a repository</button></div>
+    </div>
+    <main class="dashboard-main">
+      <section>
+        <header class="dashboard-title"><div><small>YOUR WORKSPACE</small><h1>Repository overview</h1><p>Every repository you scan is saved here on this device. Open one to review its latest results or scan it again.</p></div></header>
+        <div class="dashboard-metrics"><article><small>REPOSITORIES</small><b>${scans.length}</b><span>saved scans</span></article><article><small>OPEN FINDINGS</small><b>${totalFindings}</b><span>across latest scans</span></article><article><small>AVERAGE SCORE</small><b>${averageScore || '—'}</b><span>${scans.length ? 'out of 100' : latestDate}</span></article></div>
+        ${scans.length ? `<div class="repository-grid">${scans.map((scan, index) => {
+          const date = new Date(scan.createdAt).toLocaleString([], { dateStyle: 'medium', timeStyle: 'short' });
+          const findings = scan.findings?.length || 0;
+          return `<button class="repository-card" type="button" data-repository="${index}" aria-label="Open ${esc(scan.meta?.full_name || scan.repo.url)}">
+            <span class="repository-card-top"><span><small>REPOSITORY</small><strong>${esc(scan.meta?.full_name || `${scan.repo.owner}/${scan.repo.repo}`)}</strong></span><b>${scan.score}/100</b></span>
+            <span class="repository-card-stats"><span><b>${findings}</b> ${findings === 1 ? 'finding' : 'findings'}</span><span><b>${scan.sourceStats?.read || 0}</b> files checked</span><span><b>${scan.dependencies?.length || 0}</b> packages</span></span>
+            <span class="repository-card-foot"><span>Scanned ${esc(date)}</span><span>Open summary →</span></span>
+          </button>`;
+        }).join('')}</div>` : `<div class="dashboard-empty"><h2>No repositories scanned yet</h2><p>Run your first public repository scan and it will appear here automatically.</p><button id="emptyScanRepo" type="button">Scan a repository</button></div>`}
+      </section>
+    </main>`;
+}
+
+function openDashboard() {
+  let consoleElement = $('#console');
+  if (!consoleElement) {
+    consoleElement = document.createElement('div');
+    consoleElement.id = 'console';
+    document.body.append(consoleElement);
+  }
+  const scans = latestRepositoryScans();
+  if (!consoleElement.classList.contains('open')) lastFocused = document.activeElement;
+  consoleElement.setAttribute('role', 'dialog');
+  consoleElement.setAttribute('aria-modal', 'true');
+  consoleElement.setAttribute('aria-label', 'Heimdall repository dashboard');
+  consoleElement.setAttribute('aria-hidden', 'false');
+  consoleElement.tabIndex = -1;
+  consoleElement.innerHTML = dashboardMarkup(scans);
+  consoleElement.classList.add('open');
+  document.body.style.overflow = 'hidden';
+  consoleElement.focus();
+
+  $('#backHome', consoleElement).onclick = () => closeConsole(consoleElement);
+  const startNewScan = () => {
+    closeConsole(consoleElement);
+    $('#top').scrollIntoView({ behavior: 'smooth' });
+    window.setTimeout(() => repoInput.focus({ preventScroll: true }), 350);
+  };
+  $('#scanNewRepo', consoleElement).onclick = startNewScan;
+  const emptyScan = $('#emptyScanRepo', consoleElement);
+  if (emptyScan) emptyScan.onclick = startNewScan;
+  $$('[data-repository]', consoleElement).forEach(button => {
+    button.onclick = () => openConsole(scans[Number(button.dataset.repository)]);
+  });
+}
+
 function consoleMarkup(scan) {
   const date = new Date(scan.createdAt).toLocaleString([], { dateStyle: 'medium', timeStyle: 'short' });
   const topFinding = scan.findings[0];
@@ -811,7 +896,7 @@ function consoleMarkup(scan) {
   const improvement = Math.min(100, scan.score + scan.findings.reduce((total, finding) => total + finding.points, 0));
   return `
     <div class="console-head">
-      <div><button id="backHome" type="button">← Site</button><span class="console-brand wordmark-console"><img src="heimdall-wordmark.png" alt="Heimdall"></span></div>
+      <div><button id="backHome" type="button">← Dashboard</button><span class="console-brand wordmark-console"><img src="heimdall-wordmark.png" alt="Heimdall"></span></div>
       <div><span class="source-note">Public source and package data</span><button id="rescanRepo" type="button">Scan again</button><button id="exportReport" type="button">Export</button></div>
     </div>
     <div class="console-shell">
@@ -896,7 +981,7 @@ function openConsole(scan) {
     consoleElement.id = 'console';
     document.body.append(consoleElement);
   }
-  lastFocused = document.activeElement;
+  if (!consoleElement.classList.contains('open')) lastFocused = document.activeElement;
   consoleElement.setAttribute('role', 'dialog');
   consoleElement.setAttribute('aria-modal', 'true');
   consoleElement.setAttribute('aria-label', `Heimdall console for ${scan.meta.full_name}`);
@@ -907,7 +992,7 @@ function openConsole(scan) {
   document.body.style.overflow = 'hidden';
   consoleElement.focus();
 
-  $('#backHome', consoleElement).onclick = () => closeConsole(consoleElement);
+  $('#backHome', consoleElement).onclick = openDashboard;
   const tabs = $$('[data-tab]', consoleElement);
   tabs.forEach((button, index) => {
     button.onclick = () => activateTab(button, consoleElement);
@@ -1310,7 +1395,7 @@ function setupLandingInteractions() {
       const finalX = available * (index / (journeyCards.length - 1));
       const x = centerX + (finalX - centerX) * eased;
       const scale = .94 + arrival * .1 - settling * .04;
-      const y = 12 + eased * 82;
+      const y = 13 + eased * 87;
       card.style.opacity = String(arrival);
       card.style.transform = `translate3d(${x}px, ${y}px, 0) scale(${scale})`;
       card.style.zIndex = String(10 + (phase > 0 && phase < 1 ? 2 : 0) - index);
@@ -1357,7 +1442,7 @@ function setupLandingInteractions() {
     compareProjectInput.focus({ preventScroll: true });
   });
   $('#close').onclick = () => closeModal(true);
-  $('#launchConsole').onclick = () => result ? openConsole(result) : startScan('https://github.com/OWASP/NodeGoat');
+  $('#launchConsole').onclick = openDashboard;
   $('#agentButton').onclick = () => result ? openConsole(result) : startScan('https://github.com/OWASP/NodeGoat');
   $('#playReplay').onclick = playFlightRecorder;
   $('#containPath').onclick = () => {
