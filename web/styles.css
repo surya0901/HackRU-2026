@@ -403,12 +403,12 @@ nav{z-index:50;isolation:isolate}nav>.brand,nav>.links,nav>.actions{position:rel
 @media(prefers-reduced-motion:reduce){.final-sigil img,.headline-reel__glyph{animation:none}.headline-reel__glyph{filter:none!important;transform:none!important;color:inherit!important}}
 
 /* Branded opening: the real page is revealed through an expanding trident. */
-.intro-splash{position:fixed;inset:0;z-index:9999;overflow:hidden;pointer-events:none;contain:strict;animation:intro-finish .01s linear 1.88s forwards}
+.intro-splash{position:fixed;inset:0;z-index:9999;overflow:hidden;pointer-events:none;contain:strict;animation:intro-finish .01s linear 1.46s forwards}
 .intro-splash::before{content:"";position:absolute;inset:0;z-index:1;background:#9a7412;animation:intro-veil .18s linear .68s forwards}
-.intro-aperture{position:absolute;inset:0;width:100%;height:100%;will-change:opacity;animation:intro-aperture-fade .12s linear 1.56s forwards}
+.intro-aperture{position:absolute;inset:0;width:100%;height:100%;will-change:opacity;animation:intro-aperture-fade .1s linear 1.30s forwards}
 .intro-cutout{transform:translate(-36px,-36px)}
 .intro-trident{position:absolute;z-index:2;left:50%;top:34%;width:72px;height:72px;transform:translate(-50%,-50%);filter:brightness(0);will-change:opacity,transform;animation:intro-trident .78s cubic-bezier(.22,1,.36,1) both}
-.intro-label{position:absolute;z-index:3;left:50%;bottom:72px;transform:translateX(-50%) skewX(-7deg);color:#0b1f42;font-family:Impact,"Arial Narrow","Helvetica Neue Condensed Bold",sans-serif;font-size:20px;font-weight:900;font-stretch:condensed;line-height:1;letter-spacing:.075em;white-space:nowrap;animation:intro-label 1.32s ease both}
+.intro-label{position:absolute;z-index:3;left:50%;bottom:72px;transform:translateX(-50%) skewX(-7deg);color:#0b1f42;font-family:Impact,"Arial Narrow","Helvetica Neue Condensed Bold",sans-serif;font-size:20px;font-weight:900;font-stretch:condensed;line-height:1;letter-spacing:.075em;white-space:nowrap;animation:intro-label 1.12s ease both}
 @keyframes intro-aperture-fade{to{opacity:0}}
 @keyframes intro-veil{to{opacity:0}}
 @keyframes intro-trident{0%{opacity:0;transform:translate(-50%,-50%) scale(.82)}22%,62%{opacity:1;transform:translate(-50%,-50%) scale(1)}100%{opacity:0;transform:translate(-50%,-50%) scale(1.08)}}
