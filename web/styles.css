@@ -401,3 +401,18 @@ nav{z-index:50;isolation:isolate}nav>.brand,nav>.links,nav>.actions{position:rel
 @keyframes glyph-lock{0%{transform:translateY(-.12em);filter:blur(.8px);color:#8a5a00}58%{transform:translateY(.035em)}100%{transform:translateY(0);filter:blur(0);color:inherit}}
 @media(max-width:760px){.final{grid-template-columns:1fr;gap:28px;padding:64px 28px;text-align:center}.final-copy p{margin-left:auto;margin-right:auto}.final-sigil{height:210px;border-left:0;border-top:1px solid rgba(138,90,0,.2)}.final-sigil img{width:150px}.final-copy button{align-self:center}}
 @media(prefers-reduced-motion:reduce){.final-sigil img,.headline-reel__glyph{animation:none}.headline-reel__glyph{filter:none!important;transform:none!important;color:inherit!important}}
+
+/* Branded opening: two solid trident gates reveal the product. */
+.intro-splash{position:fixed;inset:0;z-index:9999;display:grid;place-items:center;overflow:hidden;pointer-events:none;animation:intro-finish .01s linear 1.95s forwards}
+.intro-panel{position:absolute;inset:0;background:#bf9b30;will-change:transform}
+.intro-panel-left{right:42%;clip-path:polygon(0 0,100% 0,82% 100%,0 100%);animation:intro-left .9s cubic-bezier(.77,0,.18,1) 1.02s forwards}
+.intro-panel-right{left:42%;clip-path:polygon(18% 0,100% 0,100% 100%,0 100%);animation:intro-right .9s cubic-bezier(.77,0,.18,1) 1.02s forwards}
+.intro-mark{position:relative;z-index:2;display:grid;place-items:center;animation:intro-mark 1.2s cubic-bezier(.22,1,.36,1) both}
+.intro-mark img{width:66px;height:66px}
+.intro-label{position:absolute;z-index:2;left:50%;bottom:34px;transform:translateX(-50%);color:#0b1f42;font-size:10px;font-weight:800;letter-spacing:.12em;white-space:nowrap;animation:intro-label 1.2s ease both}
+@keyframes intro-mark{0%{opacity:0;transform:scale(.72)}25%,72%{opacity:1;transform:scale(1)}100%{opacity:0;transform:scale(1.08)}}
+@keyframes intro-label{0%,18%{opacity:0}34%,72%{opacity:.82}100%{opacity:0}}
+@keyframes intro-left{to{transform:translateX(-112%)}}
+@keyframes intro-right{to{transform:translateX(112%)}}
+@keyframes intro-finish{to{visibility:hidden}}
+@media(prefers-reduced-motion:reduce){.intro-splash{animation:intro-finish .01s linear .15s forwards}.intro-panel-left{animation:intro-left .01s linear .14s forwards}.intro-panel-right{animation:intro-right .01s linear .14s forwards}.intro-mark{animation:none}}
