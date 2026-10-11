@@ -4,3 +4,8 @@ compatibility_date = "2026-10-10"
 
 [vars]
 ALLOWED_ORIGIN = "https://surya0901.github.io"
+
+# Optional secrets, configured with `wrangler secret put` rather than committed:
+# GEMINI_API_KEY keeps the existing website integration working.
+# GITHUB_TOKEN raises GitHub API limits for MCP scans.
+# MCP_AUTH_TOKEN restricts access to the MCP endpoint.

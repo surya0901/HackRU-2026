@@ -1414,7 +1414,8 @@ function setupLandingInteractions() {
     const available = track.clientWidth - cardWidth;
     const centerX = available / 2;
     const start = journey.offsetTop;
-    const range = Math.max(1, journey.offsetHeight - window.innerHeight);
+    const pin = $('.journey-pin');
+    const range = Math.max(1, journey.offsetHeight - (pin?.offsetHeight || window.innerHeight));
     const progress = Math.max(0, Math.min(0.999, (window.scrollY - start) / range));
     if (progress >= .94) journeyComplete = true;
     journeyCards.forEach((card, index) => {

@@ -1,3 +1,5 @@
+import { handleMcp } from './mcp.js';
+
 const MODEL = 'gemini-3.8-flash';
 const MAX_BODY_BYTES = 120_000;
 
@@ -17,6 +19,9 @@ function json(payload, status, headers) {
 
 export default {
   async fetch(request, env) {
+    const url = new URL(request.url);
+    if (url.pathname === '/mcp') return handleMcp(request, env);
+
     const origin = request.headers.get('origin') || '';
     const headers = cors(origin, env.ALLOWED_ORIGIN);
     if (request.method === 'OPTIONS') return new Response(null, { status: 204, headers });
